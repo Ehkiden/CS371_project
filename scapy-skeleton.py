@@ -1,4 +1,4 @@
-from scapy.all import sniff
+from scapy.all import *
 #from get_df import *
 import pandas as pd
 import numpy as np
@@ -6,14 +6,22 @@ import sys
 import socket 
 import os
     
-def fields_extraction(x):
-     print( x.sprintf("{IP:%IP.src%,%IP.dst%,}"
-         "{TCP:%TCP.sport%,%TCP.dport%,}"
-         "{UDP:%UDP.sport%,%UDP.dport%}"))
-     print( x.summary())
-     x.show()
+def query(x):
+  if IP in x:
+    src_ip = x[IP].src
+    dest_ip = x[IP].dst
+    if x.haslayer(DNS) and x.getlayer(DNS).qr == 0:
+      print(src_ip+" --> "+dest_ip+": "+x.getlayer(DNS).qd.qname)
 
-pkts = sniff(prn = lambda x: fields_extraction(x), count = 100)
+def fields_extraction(x):
+  query(x)
+  print( x.sprintf("{IP:%IP.src%,%IP.dst%,}"
+      "{TCP:%TCP.sport%,%TCP.dport%,%TCP.payload%}"
+      "{UDP:%UDP.sport%,%UDP.dport%}"))
+  print( x.summary())
+  x.show()
+
+pkts = sniff(prn = lambda x: fields_extraction(x), count = 50)
 
 #"show" function 
 
@@ -33,10 +41,13 @@ IPdst       -   extracted
 proto       -   extracted
 feature_1   -   src_port
 feature_2   -   dest_port
-feature_3   -   
+feature_3   -   chksum    -- use chksum to compare the send and recieve amount from src to dest. If src is recieving alot more than sending, then its downloading a file
 feature_4   -   
 feature_5   -   
-label       -   
+label       -   1. Web browsing                     -   ports tcp/80,443
+                2. Video streaming (e.g., YouTube)  -   uses TCP
+                3. Video conference (e.g., Skype)   -   should be using UDP
+                4. File download                    -   ports tcp/20, tcp/21? also tcp/443
 
 
 '''
