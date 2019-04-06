@@ -14,41 +14,49 @@ def query(x):
       print(src_ip+" --> "+dest_ip+": "+x.getlayer(DNS).qd.qname)
 
 def fields_extraction(x):
-  query(x)
+  #query(x)
   print( x.sprintf("{IP:%IP.src%,%IP.dst%,}"
-      "{TCP:%TCP.sport%,%TCP.dport%,%TCP.payload%}"
+      "{TCP:%TCP.sport%,%TCP.dport%}"
       "{UDP:%UDP.sport%,%UDP.dport%}"))
   print( x.summary())
   x.show()
 
-pkts = sniff(prn = lambda x: fields_extraction(x), count = 50)
+#pkts = sniff(filter="len >= 41 and ip proto tcp or ip proto udp or ip6 proto tcp or ip6 proto udp" ,prn = lambda x: fields_extraction(x), count = 50)
+pkts = sniff(filter="len>=41" ,prn = lambda x: fields_extraction(x), count = 50)
 
 #"show" function 
 
 
 '''
-what to extract:
-src_ip
-src_port
-dest_ip
-dest_port
-app(from protocol, len, and port(from host)) 
+Soooooooooo
+What they want is a set of packets to represent a flow
 
-columns:
-flow_id     -   auto incremented
-IPsrc       -   extracted
-IPdst       -   extracted
-proto       -   extracted
-feature_1   -   src_port
-feature_2   -   dest_port
-feature_3   -   chksum    -- use chksum to compare the send and recieve amount from src to dest. If src is recieving alot more than sending, then its downloading a file
-feature_4   -   
-feature_5   -   
-label       -   1. Web browsing                     -   ports tcp/80,443
-                2. Video streaming (e.g., YouTube)  -   uses TCP
-                3. Video conference (e.g., Skype)   -   should be using UDP
-                4. File download                    -   ports tcp/20, tcp/21? also tcp/443
+This would look like:
+duration(not needed), src_ip, src_port, dest_ip, dest_port, protocol, bytes_in, bytes_out, seq, ack, src_transfer_rate, dest_transfer_rate, 
 
+src_ip    - This will be our ip (for simplicity sake...)
+src_port  - The src ip's port
+dest_ip   - The dest ip that is seen with the src ip
+dest_port - The dest port
+protocol  - TCP or UDP
+bytes_in  - The total bytes the src_ip recieves from the dest_ip (aka the len )
+bytes_out - The total bytes the src_ip sent to the dest_ip (aka the len )
+seq       - The sequence number which identifies if the session is current along with the ack number
+ack       - The ack # used with the seq # to identify is the session is current
+src_transfer_rate   - Just the percentage of bytes_in/(bytes_in + bytes_out)
+dest_transfer_rate  - Just the percentage of bytes_out/(bytes_in + bytes_out)
+
+This should be good enough for what we need ^
+----------------------------------------------
+The labels will be applied after we have both packet flows into the tuple(which goes into the .csv)
+
+As for label defs:
+
+* Web Browsing should always use 80/tcp and/or 443/tcp and be a relatively small byte count
+* Video Streaming will use tcp as well as udp depending on the type of stream. Youtube uses tcp for thier prerendered videos 
+  while Live streaming sites will use UDP as they are no prerendered 
+* Video Conference will use UDP
+* File download via browser will use the same method as web browsing and stuff like scp will use 21/tcp and 22/tcp
 
 '''
 
@@ -88,3 +96,4 @@ Ether / IP / TCP 52.223.224.71:https > 192.168.1.155:11203 A / Raw
         urgptr    = 0
         options   = []
 '''
+
