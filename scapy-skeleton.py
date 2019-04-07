@@ -1,28 +1,23 @@
-from scapy.all import *
-#from get_df import *
+from scapy.all import sniff
 import pandas as pd
 import numpy as np
 import sys
 import socket 
 import os
     
-def query(x):
-  if IP in x:
-    src_ip = x[IP].src
-    dest_ip = x[IP].dst
-    if x.haslayer(DNS) and x.getlayer(DNS).qr == 0:
-      print(src_ip+" --> "+dest_ip+": "+x.getlayer(DNS).qd.qname)
-
 def fields_extraction(x):
-  #query(x)
-  print( x.sprintf("{IP:%IP.src%,%IP.dst%,}"
-      "{TCP:%TCP.sport%,%TCP.dport%}"
-      "{UDP:%UDP.sport%,%UDP.dport%}"))
-  print( x.summary())
-  x.show()
+  #current format for tcp:
+  #src_ip, dest_ip, len, protocol, src_port, dest_port, seq, ack
+  #current format for udp:
+  #src_ip, dest_ip, len, protocol, src_port, dest_port, len
+  print( x.sprintf("{IP:%IP.src%,%IP.dst%,%IP.len%,}"
+      "{TCP:tcp,%TCP.sport%,%TCP.dport%,%TCP.seq%,%TCP.ack%}"
+      "{UDP:udp,%UDP.sport%,%UDP.dport%,%UDP.len%}"))
+  #print( x.summary())
+  #x.show()
+  #
 
-#pkts = sniff(filter="len >= 41 and ip proto tcp or ip proto udp or ip6 proto tcp or ip6 proto udp" ,prn = lambda x: fields_extraction(x), count = 50)
-pkts = sniff(filter="len>=41" ,prn = lambda x: fields_extraction(x), count = 50)
+pkts = sniff(filter="port 443 or port 80" ,prn = lambda x: fields_extraction(x), count = 50)
 
 #"show" function 
 
@@ -30,9 +25,11 @@ pkts = sniff(filter="len>=41" ,prn = lambda x: fields_extraction(x), count = 50)
 '''
 Soooooooooo
 What they want is a set of packets to represent a flow
+meaning that each flow will contain packets where the src_ip, dest_ip, protocol, src_port, dest_port are crossed
+ref with each other or the same
 
 This would look like:
-duration(not needed), src_ip, src_port, dest_ip, dest_port, protocol, bytes_in, bytes_out, seq, ack, src_transfer_rate, dest_transfer_rate, 
+duration(not needed), src_ip, dest_ip, protocol, src_port, dest_port, bytes_in, bytes_out, seq, ack, src_transfer_rate, dest_transfer_rate, 
 
 src_ip    - This will be our ip (for simplicity sake...)
 src_port  - The src ip's port
@@ -41,8 +38,10 @@ dest_port - The dest port
 protocol  - TCP or UDP
 bytes_in  - The total bytes the src_ip recieves from the dest_ip (aka the len )
 bytes_out - The total bytes the src_ip sent to the dest_ip (aka the len )
-seq       - The sequence number which identifies if the session is current along with the ack number
+**************** maybe skip these and just go by ip and port
+seq       - The sequence number which identifies if the session is current along with the ack number  
 ack       - The ack # used with the seq # to identify is the session is current
+****************
 src_transfer_rate   - Just the percentage of bytes_in/(bytes_in + bytes_out)
 dest_transfer_rate  - Just the percentage of bytes_out/(bytes_in + bytes_out)
 
