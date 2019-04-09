@@ -33,22 +33,22 @@ def fields_extraction(x, results, flowList):
     if(len(flowList)!=0):
       #iterate through the tables
       for flow in flowList:
-        if( src_ip == flowList[flow][1] and dest_ip == flowList[flow][2] and src_port == flowList[flow][3] and dest_port == flowList[flow][4] and proto == flowList[flow][5] ):
+        if( src_ip == flow[1] and dest_ip == flow[2] and src_port == flow[3] and dest_port == flow[4] and proto == flow[5] ):
           #means we sent the pkt
           #update the tuple bytes and pkts
-          flowList[flow][6] = flowList[flow][6] + 1           #total pkts
-          flowList[flow][7] = flowList[flow][7] + 1           #src pkts
-          flowList[flow][9] = flowList[flow][9] + pkt_bytes   #total bytes
-          flowList[flow][10] = flowList[flow][10] + pkt_bytes #src bytes
+          flow[6] = flow[6] + 1           #total pkts
+          flow[7] = flow[7] + 1           #src pkts
+          flow[9] = flow[9] + pkt_bytes   #total bytes
+          flow[10] = flow[10] + pkt_bytes #src bytes
 
 
-        elif( src_ip == flowList[flow][2] and dest_ip == flowList[flow][1] and src_port == flowList[flow][4] and dest_port == flowList[flow][3] and proto == flowList[flow][5] ):
+        elif( src_ip == flow[2] and dest_ip == flow[1] and src_port == flow[4] and dest_port == flow[3] and proto == flow[5] ):
           #means the we recieved the pkt
           #update the tuple bytes and pkts
-          flowList[flow][6] = flowList[flow][6] + 1           #total pkts
-          flowList[flow][8] = flowList[flow][8] + 1           #dest pkts
-          flowList[flow][9] = flowList[flow][9] + pkt_bytes   #total bytes
-          flowList[flow][11] = flowList[flow][11] + pkt_bytes #dest bytes
+          flow[6] = flow[6] + 1           #total pkts
+          flow[8] = flow[8] + 1           #dest pkts
+          flow[9] = flow[9] + pkt_bytes   #total bytes
+          flow[11] = flow[11] + pkt_bytes #dest bytes
 
 
         else: #add a new flow id to the list
