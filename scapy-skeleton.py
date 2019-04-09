@@ -5,19 +5,77 @@ import sys
 import socket 
 import os
     
-def fields_extraction(x):
+
+# extracts the fields and applies them to the array
+def fields_extraction(x, results, flowList):
   #current format for tcp:
   #src_ip, dest_ip, len, protocol, src_port, dest_port, seq, ack
   #current format for udp:
   #src_ip, dest_ip, len, protocol, src_port, dest_port, len
   print( x.sprintf("{IP:%IP.src%,%IP.dst%,%IP.len%,}"
-      "{TCP:tcp,%TCP.sport%,%TCP.dport%,%TCP.seq%,%TCP.ack%}"
-      "{UDP:udp,%UDP.sport%,%UDP.dport%,%UDP.len%}"))
+      "{TCP:tcp,%TCP.sport%,%TCP.dport%}"
+      "{UDP:udp,%UDP.sport%,%UDP.dport%}"))
   #print( x.summary())
   #x.show()
-  #
+  #in flowList, format will be  <flow id>, <src_ip>, <dest_ip>, <src_port>, <dest_port>, <proto>, <total_pkts>,
+  #                             <src_pkts>, <dest_pkts>, <total_bytes>, <src_bytes>, <dest_bytes>, <label>
+  
+  try:
+    #assign the variables
+    src_ip=(str(x.sprintf("{IP:%IP.src%}")))
+    src_port=str(x.sprintf("{TCP:%TCP.sport%}""{UDP:%UDP.sport%}"))
+    dest_ip=str(x.sprintf("{IP:%IP.dst%}"))
+    dest_port=str(x.sprintf("{TCP:%TCP.dport%}""{UDP:%UDP.dport%}"))
+    proto=str(x.sprintf("{TCP:tcp}""{UDP:udp}"))
+    pkt_bytes=int(x.sprintf("{IP:%IP.len%}"))
 
-pkts = sniff(filter="port 443 or port 80" ,prn = lambda x: fields_extraction(x), count = 50)
+    #check if the flowList list is empty or not
+    if(len(flowList)!=0):
+      #iterate through the tables
+      for flow in flowList:
+        if( src_ip == flowList[flow][1] and dest_ip == flowList[flow][2] and src_port == flowList[flow][3] and dest_port == flowList[flow][4] and proto == flowList[flow][5] ):
+          #means we sent the pkt
+          #update the tuple bytes and pkts
+          flowList[flow][6] = flowList[flow][6] + 1           #total pkts
+          flowList[flow][7] = flowList[flow][7] + 1           #src pkts
+          flowList[flow][9] = flowList[flow][9] + pkt_bytes   #total bytes
+          flowList[flow][10] = flowList[flow][10] + pkt_bytes #src bytes
+
+
+        elif( src_ip == flowList[flow][2] and dest_ip == flowList[flow][1] and src_port == flowList[flow][4] and dest_port == flowList[flow][3] and proto == flowList[flow][5] ):
+          #means the we recieved the pkt
+          #update the tuple bytes and pkts
+          flowList[flow][6] = flowList[flow][6] + 1           #total pkts
+          flowList[flow][8] = flowList[flow][8] + 1           #dest pkts
+          flowList[flow][9] = flowList[flow][9] + pkt_bytes   #total bytes
+          flowList[flow][11] = flowList[flow][11] + pkt_bytes #dest bytes
+
+
+        else: #add a new flow id to the list
+          flow_id = len(flowList)-1
+          addFlow=[flow_id, src_ip, dest_ip, src_port, dest_port, proto, 1, 1, 0, pkt_bytes, pkt_bytes, 0, 0]
+          flowList.append(addFlow)
+
+    else: #append the first flow in the list
+      addFlow=[0, src_ip, dest_ip, src_port, dest_port, proto, 1, 1, 0, pkt_bytes, pkt_bytes, 0, 0]
+      flowList.append(addFlow)
+  except:
+    pass
+
+  results.append(str(( x.sprintf("{IP:%IP.src%,%IP.dst%,%IP.len%,}"
+      "{TCP:tcp,%TCP.sport%,%TCP.dport%}"
+      "{UDP:udp,%UDP.sport%,%UDP.dport%}"))).split(","))
+
+
+
+
+def main():
+  results = []
+  flowList = []
+  pkts = sniff(prn = lambda x: fields_extraction(x, results, flowList), count = 50)
+
+
+main()
 
 #"show" function 
 
