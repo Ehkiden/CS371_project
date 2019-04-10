@@ -7,8 +7,11 @@ from sklearn.svm import SVC
 from sklearn.svm import LinearSVC
 from sklearn import tree
 
-# importing the csv file into a data structure known as pandas DataFrame
-df = pd.read_csv("data.csv", header=None)
+try:
+    # importing the csv file into a data structure known as pandas DataFrame
+    df = pd.read_csv("data.csv", header=None)
+except ValueError:
+    print("Error... no csv file or file is curruppted")
 
 # You might not need this next line if you do not care about losing information about flow_id etc.
 #These are the names that will be assigned to the fields of the csv --> make sure to name these correctly
@@ -21,12 +24,16 @@ features = ['proto', 'feature_1', 'feature_2', 'feature_3', 'feature_4', 'featur
 X = df[features]    #This are features, needed for training and testing sets
 y = df['label']     #This are labels, needed for training and testing sets
 
-#Labels
+#Labels----------------------------------------------------------------
 # 1 = Web browsing                      NEED 25 FLOWS FOR THIS CASE
 # 2 = Video streaming (ie Youtube)      NEED 25 FLOWS FOR THIS CASE
-# 3 = Vido conference (ie skype)        NEED 25 FLOWS FOR THIS CASE
+# 3 = Video conference (ie skype)       NEED 25 FLOWS FOR THIS CASE
 # 4 = File download                     NEED 25 FLOWS FOR THIS CASE
 #                                       FOR A TOTAL OF 100 SAMPLES (FLOWS)
+labelWeb = 1
+labelVStream = 2
+labelVConfrence = 3
+labelFileDL = 4
 
 #Will run the machine learning model 10 times (cross validation)
 acc_scores = 0
@@ -37,9 +44,14 @@ for i in range(0, 10):
 
     #MACHINE LEARNING MODEL 1---------------------------------------------------
     #Decision Trees
-    clf = tree.DecisionTreeClassifier()
-    clf.fit(X_train, y_train)
-
+    #Reference: https://scikit-learn.org/stable/modules/tree.html#tree
+    
+    clf = tree.DecisionTreeClassifier()            #initialize the Decision Tree
+    clf.fit(X_train, y_train)                      #train the model with training sets
+    clf.predict(X_test, y_test)                    #test the model
+    results = clf.score(X_test, y_test)
+    print(results)
+    
     #MACHINE LEARNING MODEL 2---------------------------------------------------
     # Neural network (MultiPerceptron Classifier)
     # clf = MLPClassifier()
