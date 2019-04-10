@@ -4,6 +4,7 @@ import numpy as np
 import sys
 import socket 
 import os
+import time
     
 
 # extracts the fields and applies them to the array
@@ -19,8 +20,9 @@ def fields_extraction(x, results, flowList):
   #print( x.summary())
   #x.show()
   #in flowList, format will be  <flow id>, <src_ip>, <dest_ip>, <src_port>, <dest_port>, <proto>, <total_pkts>,
-  #                             <src_pkts>, <dest_pkts>, <total_bytes>, <src_bytes>, <dest_bytes>, <label>
-  
+  #                             <src_pkts>, <dest_pkts>, <total_bytes>, <src_bytes>, <dest_bytes>, <start_time>, <duration>, <label>
+  #NOTE: the duration will be in epoch time GMT, if needed I (Jared) can convert it via code
+
   try:
     #assign the variables
     src_ip=(str(x.sprintf("{IP:%IP.src%}")))
@@ -42,6 +44,7 @@ def fields_extraction(x, results, flowList):
           flow[7] = flow[7] + 1           #src pkts
           flow[9] = flow[9] + pkt_bytes   #total bytes
           flow[10] = flow[10] + pkt_bytes #src bytes
+          flow[13] = int(time.time())-flow[12]  #increase the duration
           flow_match=1
 
 
@@ -52,15 +55,16 @@ def fields_extraction(x, results, flowList):
           flow[8] = flow[8] + 1           #dest pkts
           flow[9] = flow[9] + pkt_bytes   #total bytes
           flow[11] = flow[11] + pkt_bytes #dest bytes
+          flow[13] = int(time.time())-flow[12]  #increase the duration
           flow_match=1
 
       if(flow_match==0): #add a new flow id to the list
         flow_id = len(flowList)
-        addFlow=[flow_id, src_ip, dest_ip, src_port, dest_port, proto, 1, 1, 0, pkt_bytes, pkt_bytes, 0, 0]
+        addFlow=[flow_id, src_ip, dest_ip, src_port, dest_port, proto, 1, 1, 0, pkt_bytes, pkt_bytes, 0, int(time.time()), int(time.time()), 0]
         flowList.append(addFlow)
 
     else: #append the first flow in the list
-      addFlow=[0, src_ip, dest_ip, src_port, dest_port, proto, 1, 1, 0, pkt_bytes, pkt_bytes, 0, 0]
+      addFlow=[0, src_ip, dest_ip, src_port, dest_port, proto, 1, 1, 0, pkt_bytes, pkt_bytes, 0, int(time.time()), int(time.time()), 0]
       flowList.append(addFlow)
   except:
     pass
@@ -75,7 +79,17 @@ def fields_extraction(x, results, flowList):
 def main():
   results = []
   flowList = []
-  pkts = sniff(prn = lambda x: fields_extraction(x, results, flowList), count = 10000)
+  pkts = sniff(filter="not port ssh and not port domain", prn = lambda x: fields_extraction(x, results, flowList), count = 10000)
+
+  '''
+  I guess after the pkts are done counting, start to write them to a .csv file
+  Depending on how the .csv process is:
+    If it reads line by line then should be able to skip any flow that has less than 100 pkts
+
+    If it imports the entire flowList all at once, then need to parse through the flowList and
+    eliminate the flows with less than 100 total pkts. If this is the case then we need to 
+    overwrite the flowIDs to make them more consistant
+  '''
 
   x=4  #debuggin purpose only
 
