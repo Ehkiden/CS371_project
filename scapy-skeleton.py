@@ -12,6 +12,7 @@ def fields_extraction(x, results, flowList):
   #src_ip, dest_ip, len, protocol, src_port, dest_port, seq, ack
   #current format for udp:
   #src_ip, dest_ip, len, protocol, src_port, dest_port, len
+  print(len(flowList))
   print( x.sprintf("{IP:%IP.src%,%IP.dst%,%IP.len%,}"
       "{TCP:tcp,%TCP.sport%,%TCP.dport%}"
       "{UDP:udp,%UDP.sport%,%UDP.dport%}"))
@@ -32,6 +33,7 @@ def fields_extraction(x, results, flowList):
     #check if the flowList list is empty or not
     if(len(flowList)!=0):
       #iterate through the tables
+      flow_match=0  #initiate a var to determine if matching flow was found
       for flow in flowList:
         if( src_ip == flow[1] and dest_ip == flow[2] and src_port == flow[3] and dest_port == flow[4] and proto == flow[5] ):
           #means we sent the pkt
@@ -40,6 +42,7 @@ def fields_extraction(x, results, flowList):
           flow[7] = flow[7] + 1           #src pkts
           flow[9] = flow[9] + pkt_bytes   #total bytes
           flow[10] = flow[10] + pkt_bytes #src bytes
+          flow_match=1
 
 
         elif( src_ip == flow[2] and dest_ip == flow[1] and src_port == flow[4] and dest_port == flow[3] and proto == flow[5] ):
@@ -49,12 +52,12 @@ def fields_extraction(x, results, flowList):
           flow[8] = flow[8] + 1           #dest pkts
           flow[9] = flow[9] + pkt_bytes   #total bytes
           flow[11] = flow[11] + pkt_bytes #dest bytes
+          flow_match=1
 
-
-        else: #add a new flow id to the list
-          flow_id = len(flowList)-1
-          addFlow=[flow_id, src_ip, dest_ip, src_port, dest_port, proto, 1, 1, 0, pkt_bytes, pkt_bytes, 0, 0]
-          flowList.append(addFlow)
+      if(flow_match==0): #add a new flow id to the list
+        flow_id = len(flowList)
+        addFlow=[flow_id, src_ip, dest_ip, src_port, dest_port, proto, 1, 1, 0, pkt_bytes, pkt_bytes, 0, 0]
+        flowList.append(addFlow)
 
     else: #append the first flow in the list
       addFlow=[0, src_ip, dest_ip, src_port, dest_port, proto, 1, 1, 0, pkt_bytes, pkt_bytes, 0, 0]
@@ -72,8 +75,9 @@ def fields_extraction(x, results, flowList):
 def main():
   results = []
   flowList = []
-  pkts = sniff(prn = lambda x: fields_extraction(x, results, flowList), count = 50)
+  pkts = sniff(prn = lambda x: fields_extraction(x, results, flowList), count = 10000)
 
+  x=4  #debuggin purpose only
 
 main()
 
