@@ -9,19 +9,6 @@ import time
 
 # extracts the fields and applies them to the array
 def fields_extraction(x, results, flowList):
-  #current format for tcp:
-  #src_ip, dest_ip, len, protocol, src_port, dest_port, seq, ack
-  #current format for udp:
-  #src_ip, dest_ip, len, protocol, src_port, dest_port, len
-  print(len(flowList))
-  print( x.sprintf("{IP:%IP.src%,%IP.dst%,%IP.len%,}"
-      "{TCP:tcp,%TCP.sport%,%TCP.dport%}"
-      "{UDP:udp,%UDP.sport%,%UDP.dport%}"))
-  #print( x.summary())
-  #x.show()
-  #in flowList, format will be  <flow id>, <src_ip>, <dest_ip>, <src_port>, <dest_port>, <proto>, <total_pkts>,
-  #                             <src_pkts>, <dest_pkts>, <total_bytes>, <src_bytes>, <dest_bytes>, <start_time>, <duration>, <label>
-  #NOTE: the duration will be in epoch time GMT, if needed I (Jared) can convert it via code
 
   try:
     #assign the variables
@@ -79,8 +66,20 @@ def fields_extraction(x, results, flowList):
 def main():
   results = []
   flowList = []
+    print("gathering data")
   pkts = sniff(filter="not port ssh and not port domain", prn = lambda x: fields_extraction(x, results, flowList), count = 10000)
 
+  F = open('test.csv', 'w') 
+  temp = str(flowList)
+  temp = temp.replace("],", '\n')
+  temp = temp.replace("[[", '')
+  temp = temp.replace("]]", '')
+  temp = temp.replace("[", '')
+  temp = temp.replace("]", '')
+  temp = temp.replace("'", '')
+  temp = temp.replace(" ", '')
+  F.write("Flow ID, src_ip, dest_ip, src_port, dest_port, proto, tot pkts, src pkts, dest pkts, total bytes, src bytes, dest bytes, label \n")
+  F.write(temp)
   '''
   I guess after the pkts are done counting, start to write them to a .csv file
   Depending on how the .csv process is:
