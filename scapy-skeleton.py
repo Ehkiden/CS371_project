@@ -1,5 +1,5 @@
 from scapy.all import sniff
-import pandas as pd
+#import pandas as pd
 import numpy as np
 import sys
 import socket 
@@ -46,12 +46,11 @@ def fields_extraction(x, results, flowList):
           flow_match=1
 
       if(flow_match==0): #add a new flow id to the list
-        flow_id = len(flowList)
-        addFlow=[flow_id, src_ip, dest_ip, src_port, dest_port, proto, 1, 1, 0, pkt_bytes, pkt_bytes, 0, int(time.time()), int(time.time()), 0]
+        addFlow=[src_ip, dest_ip, src_port, dest_port, proto, 1, 1, 0, pkt_bytes, pkt_bytes, 0, int(time.time()), int(time.time()), 0]
         flowList.append(addFlow)
 
     else: #append the first flow in the list
-      addFlow=[0, src_ip, dest_ip, src_port, dest_port, proto, 1, 1, 0, pkt_bytes, pkt_bytes, 0, int(time.time()), int(time.time()), 0]
+      addFlow=[src_ip, dest_ip, src_port, dest_port, proto, 1, 1, 0, pkt_bytes, pkt_bytes, 0, int(time.time()), int(time.time()), 0]
       flowList.append(addFlow)
   except:
     pass
@@ -66,7 +65,7 @@ def fields_extraction(x, results, flowList):
 def main():
   results = []
   flowList = []
-    print("gathering data")
+  print("gathering data")
   pkts = sniff(filter="not port ssh and not port domain", prn = lambda x: fields_extraction(x, results, flowList), count = 10000)
 
   F = open('test.csv', 'w') 
@@ -78,7 +77,7 @@ def main():
   temp = temp.replace("]", '')
   temp = temp.replace("'", '')
   temp = temp.replace(" ", '')
-  F.write("Flow ID, src_ip, dest_ip, src_port, dest_port, proto, tot pkts, src pkts, dest pkts, total bytes, src bytes, dest bytes, label \n")
+ #F.write("Flow ID, src_ip, dest_ip, src_port, dest_port, proto, tot pkts, src pkts, dest pkts, total bytes, src bytes, dest bytes, label \n")
   F.write(temp)
   '''
   I guess after the pkts are done counting, start to write them to a .csv file

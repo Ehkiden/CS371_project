@@ -9,17 +9,18 @@ from sklearn import tree
 
 try:
     # importing the csv file into a data structure known as pandas DataFrame
-    df = pd.read_csv("data.csv", header=None)
+    df = pd.read_csv("test.csv", header=None)
+    print(df)
 except ValueError:
     print("Error... no csv file or file is curruppted")
 
 # You might not need this next line if you do not care about losing information about flow_id etc.
 #These are the names that will be assigned to the fields of the csv --> make sure to name these correctly
-columns_list = ['flow_id', 'IPsrc', 'IPdst', 'proto', 'feature_1', 'feature_2', 'feature_3', 'feature_4', 'feature_5', 'label']
+columns_list = ['srcIP', 'dstIP', 'srcPort', 'destPort', 'proto', 'totalPkts', 'srcPkts', 'destPkts', 'totalBytes', 'srcBytes', 'destBytes','time1', 'time2', 'label']
 df.columns = columns_list
 
 #These are the actual features that will be used to feed the machine learning model
-features = ['proto', 'feature_1', 'feature_2', 'feature_3', 'feature_4', 'feature_5']
+features = ['totalPkts', 'srcPkts', 'destPkts', 'totalBytes', 'srcBytes', 'destBytes', 'time1', 'time2']
 
 X = df[features]    #This are features, needed for training and testing sets
 y = df['label']     #This are labels, needed for training and testing sets
@@ -48,9 +49,15 @@ for i in range(0, 10):
     
     clf = tree.DecisionTreeClassifier()            #initialize the Decision Tree
     clf.fit(X_train, y_train)                      #train the model with training sets
-    clf.predict(X_test, y_test)                    #test the model
-    results = clf.score(X_test, y_test)
-    print(results)
+    y_pred_class = clf.predict(X_test)                    #test the model
+    print('this is y_pred_class: ', y_pred_class)
+    acc_scores += accuracy_score(y_test, y_pred_class)
+    print(acc_scores)
+    #results = clf.score(X_test, y_test)
+    #print(empty(results))
+    #print(bool(results))
+    #print(item(results))
+    #print(all(results))
     
     #MACHINE LEARNING MODEL 2---------------------------------------------------
     # Neural network (MultiPerceptron Classifier)
@@ -61,9 +68,13 @@ for i in range(0, 10):
     #SVM's
     # clf = SVC(gamma='auto')     #SVC USE THIS
     # clf = LinearSVC()  #Linear SVC
-    # clf.fit(X_train, y_train) 
-
+    # clf.fit(X_train, y_train)
+print('')
+print('')
+print('total score: ', acc_scores)
+results = (acc_scores/10)
+print('avg score', results)
 #===============================================================================
 #EVALUATION PORTION-------------------------------------------------------------
     #here you are supposed to calculate the evaluation measures indicated in the project proposal (accuracy, F-score etc)
-    result = clf.score(X_test, y_test)  #accuracy score
+#result = clf.score(X_test, y_test)  #accuracy score
