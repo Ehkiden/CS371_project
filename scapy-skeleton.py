@@ -89,7 +89,7 @@ def main():
   while(i<label_len):
     user_input = input("Ready for "+label_list[i]+"?")
     if(user_input):   #do not increment until user input
-      i++
+      i=i+1
       #while the len of the 
       while(len(flowList)<24):  
         print("gathering data")
