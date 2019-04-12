@@ -5,7 +5,7 @@ import sys
 import socket 
 import os
 import time
-    
+import csv
 
 # extracts the fields and applies them to the array
 def fields_extraction(x, results, flowList):
@@ -24,25 +24,25 @@ def fields_extraction(x, results, flowList):
       #iterate through the tables
       flow_match=0  #initiate a var to determine if matching flow was found
       for flow in flowList:
-        if( src_ip == flow[1] and dest_ip == flow[2] and src_port == flow[3] and dest_port == flow[4] and proto == flow[5] ):
+        if( src_ip == flow[0] and dest_ip == flow[1] and src_port == flow[2] and dest_port == flow[3] and proto == flow[4] ):
           #means we sent the pkt
           #update the tuple bytes and pkts
-          flow[6] = flow[6] + 1           #total pkts
-          flow[7] = flow[7] + 1           #src pkts
-          flow[9] = flow[9] + pkt_bytes   #total bytes
-          flow[10] = flow[10] + pkt_bytes #src bytes
-          flow[13] = int(time.time())-flow[12]  #increase the duration
+          flow[5] = flow[5] + 1           #total pkts
+          flow[6] = flow[6] + 1           #src pkts
+          flow[8] = flow[8] + pkt_bytes   #total bytes
+          flow[9] = flow[9] + pkt_bytes #src bytes
+          flow[12] = int(time.time())-flow[11]  #increase the duration
           flow_match=1
 
 
-        elif( src_ip == flow[2] and dest_ip == flow[1] and src_port == flow[4] and dest_port == flow[3] and proto == flow[5] ):
+        elif( src_ip == flow[1] and dest_ip == flow[0] and src_port == flow[3] and dest_port == flow[2] and proto == flow[4] ):
           #means the we recieved the pkt
           #update the tuple bytes and pkts
-          flow[6] = flow[6] + 1           #total pkts
-          flow[8] = flow[8] + 1           #dest pkts
-          flow[9] = flow[9] + pkt_bytes   #total bytes
-          flow[11] = flow[11] + pkt_bytes #dest bytes
-          flow[13] = int(time.time())-flow[12]  #increase the duration
+          flow[5] = flow[5] + 1           #total pkts
+          flow[7] = flow[7] + 1           #dest pkts
+          flow[8] = flow[8] + pkt_bytes   #total bytes
+          flow[10] = flow[10] + pkt_bytes #dest bytes
+          flow[12] = int(time.time())-flow[11]  #increase the duration
           flow_match=1
 
       if(flow_match==0): #add a new flow id to the list
@@ -55,6 +55,7 @@ def fields_extraction(x, results, flowList):
   except:
     pass
 
+  print(len(flowList))
   results.append(str(( x.sprintf("{IP:%IP.src%,%IP.dst%,%IP.len%,}"
       "{TCP:tcp,%TCP.sport%,%TCP.dport%}"
       "{UDP:udp,%UDP.sport%,%UDP.dport%}"))).split(","))
@@ -66,7 +67,7 @@ def main():
   results = []
   flowList = []
   print("gathering data")
-  pkts = sniff(filter="not port ssh and not port domain", prn = lambda x: fields_extraction(x, results, flowList), count = 10000)
+  pkts = sniff(filter="not port ssh and not port domain", prn = lambda x: fields_extraction(x, results, flowList), count = 1000)
 
   F = open('test.csv', 'w') 
   temp = str(flowList)
@@ -83,11 +84,12 @@ def main():
   I guess after the pkts are done counting, start to write them to a .csv file
   Depending on how the .csv process is:
     If it reads line by line then should be able to skip any flow that has less than 100 pkts
-
     If it imports the entire flowList all at once, then need to parse through the flowList and
     eliminate the flows with less than 100 total pkts. If this is the case then we need to 
     overwrite the flowIDs to make them more consistant
   '''
+  filename="test.csv"
+
 
   x=4  #debuggin purpose only
 
