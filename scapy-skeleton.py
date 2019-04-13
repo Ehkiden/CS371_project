@@ -1,5 +1,5 @@
 from scapy.all import sniff
-#import pandas as pd
+import pandas as pd
 import numpy as np
 import sys
 import socket 
@@ -104,11 +104,40 @@ def main():
       #empty out the list array for next flow type 
       flowList = []
 
+  #once the data has been gathered, then find the avg of each feature per label
+  
+  #load the data
+  flowData = pd.read_csv('test1.csv')
 
+  j=0
+  while(j<label_len):
+
+    fD2 = flowData.groupby(flowData.columns[5])[flowData.columns[14]==j].mean()
+
+    with open('flow_feat.csv', 'w') as f:
+      fD2.to_csv(f, header=False)
+      
   x=4  #debuggin purpose only
 
 main()
 
+'''
+    if(j==0):
+      #temp = flowData[flowData[14] == j]    #retrieve rows with associated label value
+      fD2 = flowData.groupby(flowData.columns[5])[flowData.columns[14]==j].mean()
+
+
+      #write/overwrite to csv
+      with open('flow_feat.csv', 'w') as f:
+        fD2.to_csv(f, header=False)
+    else:
+
+
+      #append to csv
+      with open('flow_feat.csv', 'a') as f:
+        fD2.to_csv(f, header=False)
+
+'''
 
 
 '''
