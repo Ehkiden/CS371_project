@@ -71,19 +71,48 @@ def flowChecker(flowSent, action):
   temp = str(flowGreat)
   temp = temp.replace("],", '\n')
   temp = temp.replace("[[", '')
-  temp = temp.replace("]]", '')
+  temp = temp.replace("]]", '\n')
   temp = temp.replace("[", '')
   temp = temp.replace("]", '')
   temp = temp.replace("'", '')
   temp = temp.replace(" ", '')
   F.write(temp)
+  F.close()
 
-def flowAverage(tempList):
+def flowAverage(tempList, action):
+  flow5Tot  = 0
+  flow6Tot  = 0
+  flow7Tot  = 0
+  flow8Tot  = 0
+  flow9Tot  = 0
+  flow10Tot = 0
+  flow11Tot = 0
+  flow12Tot = 0
   for flow in tempList:
-    f
+    flow5Tot += float(flow[5])
+    flow6Tot += float(flow[6])
+    flow7Tot += float(flow[7])
+    flow8Tot += float(flow[8])
+    flow9Tot += float(flow[9])
+    flow10Tot += float(flow[10])
+    flow11Tot += float(flow[11])
+    flow12Tot += float(flow[12])
+  
+  
+  flow5Avg = flow5Tot/len(tempList)
+  flow6Avg = flow6Tot/len(tempList)
+  flow7Avg = flow7Tot/len(tempList)
+  flow8Avg = flow8Tot/len(tempList)
+  flow9Avg = flow9Tot/len(tempList)
+  flow10Avg = flow10Tot/len(tempList)
+  flow11Avg = flow11Tot/len(tempList)
+  flow12Avg = flow12Tot/len(tempList)
 
+  F2 = open('features.csv', action)
+  write = ("%s, %s, %s, %s, %s, %s, %s, %s\n")%(flow5Avg, flow6Avg, flow7Avg, flow8Avg, flow9Avg, flow10Avg, flow11Avg, flow12Avg)
 
-
+  F2.write(write)
+  F2.close()
 
 
 
@@ -101,24 +130,28 @@ def main():
   while(i<label_len):
     user_input = input("Ready for "+label_list[i]+"?")
     if(user_input):   #do not increment until user input
-      i=i+1
+      
       #while the len of the
-      while(len(flowList)<24):  
+      while(len(flowList)<24):
         print("gathering data")
         pkts = sniff(filter="not port ssh and not port domain", prn = lambda x: fields_extraction(x, flowList, i), count = 3000)
         
       #only append the data once we have 25+ flows of current activity
       if(i==0):
         flowChecker(flowList, "w")  #for creating and writing the csv
+        flowAverage(flowList, "w")
       else:
         flowChecker(flowList, "a")  #for appending and not overwriting instead
-
+        flowAverage(flowList, "a")
+    
       #empty out the list array for next flow type 
       flowList = []
+      i=i+1
 
 
   x=4  #debuggin purpose only
-  
+
+
 main()
 
 
