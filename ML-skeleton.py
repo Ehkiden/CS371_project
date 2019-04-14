@@ -16,7 +16,7 @@ from sklearn.neural_network import MLPClassifier                #machine learnin
 
 try:
     # importing the csv file into a data structure known as pandas DataFrame
-    df = pd.read_csv("test.csv", header=None)
+    df = pd.read_csv("test1.csv", header=None)
     print(df)
 except ValueError:
     print("Error... no csv file or file is curruppted")
