@@ -119,6 +119,29 @@ def filtered_flowCheck(flowList, curr_flowLabel):
   num = (df['label']==curr_flowLabel).sum()
   return num
 
+def getAvg():
+  df = pd.read_csv('flowData.csv')
+  columns_list = ['srcIP', 'dstIP', 'srcPort', 'destPort', 'proto', 'totalPkts', 'srcPkts', 'destPkts', 'totalBytes', 'srcBytes', 'destBytes', 'currTime', 'durrTime', 'label']
+  df.columns = columns_list
+
+  avg_totPkts = df.groupby('label')['totalPkts'].mean()
+  avg_srcPkts = df.groupby('label')['srcPkts'].mean()
+  avg_destPkts = df.groupby('label')['destPkts'].mean()
+  avg_totBytes = df.groupby('label')['totalBytes'].mean()
+  avg_srcBytes = df.groupby('label')['srcBytes'].mean()
+  avg_destBytes = df.groupby('label')['destBytes'].mean()
+  avg_durrtime = df.groupby('label')['durrTime'].mean()
+
+  with open('features.csv', 'w') as f:
+    avg_totPkts.to_csv(f, header=False, index=False)
+
+  with open('features.csv', 'a') as f:
+    avg_srcPkts.to_csv(f, header=False, index=False)
+    avg_destPkts.to_csv(f, header=False, index=False)
+    avg_totBytes.to_csv(f, header=False, index=False)
+    avg_srcBytes.to_csv(f, header=False, index=False)
+    avg_destBytes.to_csv(f, header=False, index=False)
+    avg_durrtime.to_csv(f, header=False, index=False)
 
 
 def main():
@@ -149,24 +172,24 @@ def main():
         print("gathering data")
         pkts = sniff(filter="not port ssh and not port domain", prn = lambda x: fields_extraction(x, flowList, i), count = 3000)
         
-      #only append the data once we have 25+ flows of current activity
-      #if(y==0):
-      #  y=y+1
-      #  flowChecker(flowList, "w")  #for creating and writing the csv
+#      only append the data once we have 25+ flows of current activity
+      if(y==0):
+        y=y+1
+        flowChecker(flowList, "w")  #for creating and writing the csv
     
-      #else:
-      #  flowChecker(flowList, "a")  #for appending and not overwriting instead
+      else:
+        flowChecker(flowList, "a")  #for appending and not overwriting instead
     
     
       #empty out the list array for next flow type
       #check if the filtered csv is currently at >= 25 then empty else keep going
       if(filtered_flowCheck(flowList, i)>24):
         if(p==0):
-          flowChecker(flowList, "w")  #for creating and writing the csv
+#          flowChecker(flowList, "w")  #for creating and writing the csv
           flowAverage(flowList, "w")
           p=p+1
         else:
-          flowChecker(flowList, "a")  #for appending and not overwriting instead
+#          sflowChecker(flowList, "a")  #for appending and not overwriting instead
           flowAverage(flowList, "a")
         i=i+1
         keep_coll=0
@@ -176,7 +199,7 @@ def main():
       #else:
         #stop = 0
   x=4  #debuggin purpose only
-
+  getAvg()
 
 main()
 
