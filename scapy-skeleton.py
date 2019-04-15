@@ -66,7 +66,7 @@ def flowChecker(flowSent, action):
     if(flow[5]>99):
       flowGreat.append(flow)
   #action is whether to write or append
-  F = open('test1.csv', action) 
+  F = open('flowData.csv', action) 
   #convert entire flow list to str and replace brackets with commas
   temp = str(flowGreat)
   temp = temp.replace("],", '\n')
@@ -111,8 +111,9 @@ def flowAverage(tempList, action):
   F2.write(write)
   F2.close()
 
+#check if the current flow list meets the sample size requirements
 def filtered_flowCheck(flowList, curr_flowLabel):
-  df = pd.read_csv('test1.csv')
+  df = pd.read_csv('flowData.csv')
   columns_list = ['srcIP', 'dstIP', 'srcPort', 'destPort', 'proto', 'totalPkts', 'srcPkts', 'destPkts', 'totalBytes', 'srcBytes', 'destBytes', 'currTime', 'durrTime', 'label']
   df.columns = columns_list
   num = (df['label']==curr_flowLabel).sum()
@@ -132,43 +133,48 @@ def main():
   i=1
   y=0
   p=0
-  stop = 0
+  #stop = 0
+  keep_coll=0
   while(i<label_len):
-      
-    user_input = input("Ready for "+label_list[i-1]+"?")
+    #change what user_input is based on whether we are still collecting or not
+    if(keep_coll == 0):
+      user_input = input("Ready for "+label_list[i-1]+"?")  #moving on
+    else:
+      user_input=1  #still collecting
+
     if(user_input):   #do not increment until user input
       #while the len of the
-      while((len(flowList)<24) and (stop != 1)):
+      while((len(flowList)<24)):
+        keep_coll=1
         print("gathering data")
         pkts = sniff(filter="not port ssh and not port domain", prn = lambda x: fields_extraction(x, flowList, i), count = 3000)
         
       #only append the data once we have 25+ flows of current activity
-      if(y==0):
-        y=y+1
-        flowChecker(flowList, "w")  #for creating and writing the csv
+      #if(y==0):
+      #  y=y+1
+      #  flowChecker(flowList, "w")  #for creating and writing the csv
     
-      else:
-        flowChecker(flowList, "a")  #for appending and not overwriting instead
+      #else:
+      #  flowChecker(flowList, "a")  #for appending and not overwriting instead
     
     
       #empty out the list array for next flow type
       #check if the filtered csv is currently at >= 25 then empty else keep going
       if(filtered_flowCheck(flowList, i)>24):
-        i=i+1
         if(p==0):
+          flowChecker(flowList, "w")  #for creating and writing the csv
           flowAverage(flowList, "w")
           p=p+1
         else:
+          flowChecker(flowList, "a")  #for appending and not overwriting instead
           flowAverage(flowList, "a")
-              
+        i=i+1
+        keep_coll=0
         flowList = []
-        stop = 1
+        #stop = 1
         
-      else:
-        stop = 0
-  
-  
-  
+      #else:
+        #stop = 0
   x=4  #debuggin purpose only
 
 
