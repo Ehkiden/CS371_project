@@ -114,6 +114,11 @@ def flowAverage(tempList, action):
   F2.write(write)
   F2.close()
 
+def filtered_flowCheck(flowList, curr_flowLabel):
+  df = pd.read_csv('test1.csv')
+  num = (df.[13]==curr_flowLabel).sum()
+
+  return num
 
 
 
@@ -146,9 +151,11 @@ def main():
         flowChecker(flowList, "a")  #for appending and not overwriting instead
         flowAverage(flowList, "a")
     
-      #empty out the list array for next flow type 
-      flowList = []
-      i=i+1
+      #empty out the list array for next flow type
+      #check if the filtered csv is currently at >= 25 then empty else keep going
+      if(filtered_flowCheck(flowList, i)>24): 
+        flowList = []
+        i=i+1
   
   x=4  #debuggin purpose only
 
