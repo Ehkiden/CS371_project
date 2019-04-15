@@ -1,5 +1,5 @@
 from scapy.all import sniff
-#import pandas as pd
+import pandas as pd
 import numpy as np
 import sys
 import socket 
@@ -66,61 +66,137 @@ def flowChecker(flowSent, action):
     if(flow[5]>99):
       flowGreat.append(flow)
   #action is whether to write or append
-  F = open('test1.csv', action) 
+  F = open('flowData.csv', action) 
   #convert entire flow list to str and replace brackets with commas
   temp = str(flowGreat)
   temp = temp.replace("],", '\n')
   temp = temp.replace("[[", '')
-  temp = temp.replace("]]", '')
+  temp = temp.replace("]]", '\n')
   temp = temp.replace("[", '')
   temp = temp.replace("]", '')
   temp = temp.replace("'", '')
   temp = temp.replace(" ", '')
   F.write(temp)
+  F.close()
 
-def flowAverage(tempList):
+def flowAverage(tempList, action):
+  flow5Tot  = 0
+  flow6Tot  = 0
+  flow7Tot  = 0
+  flow8Tot  = 0
+  flow9Tot  = 0
+  flow10Tot = 0
+  flow12Tot = 0
   for flow in tempList:
-    f
+    flow5Tot += float(flow[5])
+    flow6Tot += float(flow[6])
+    flow7Tot += float(flow[7])
+    flow8Tot += float(flow[8])
+    flow9Tot += float(flow[9])
+    flow10Tot += float(flow[10])
+    flow12Tot += float(flow[12])
+  
+  
+  flow5Avg = int(flow5Tot/len(tempList))
+  flow6Avg = int(flow6Tot/len(tempList))
+  flow7Avg = int(flow7Tot/len(tempList))
+  flow8Avg = int(flow8Tot/len(tempList))
+  flow9Avg = int(flow9Tot/len(tempList))
+  flow10Avg = int(flow10Tot/len(tempList))
+  flow12Avg = int(flow12Tot/len(tempList))
 
+  F2 = open('features.csv', action)
+  write = ("%s, %s, %s, %s, %s, %s, %s\n")%(flow5Avg, flow6Avg, flow7Avg, flow8Avg, flow9Avg, flow10Avg, flow12Avg)
 
+  F2.write(write)
+  F2.close()
 
-
+#check if the current flow list meets the sample size requirements
+def filtered_flowCheck(flowList, curr_flowLabel):
+  df = pd.read_csv('flowData.csv')
+  columns_list = ['srcIP', 'dstIP', 'srcPort', 'destPort', 'proto', 'totalPkts', 'srcPkts', 'destPkts', 'totalBytes', 'srcBytes', 'destBytes', 'currTime', 'durrTime', 'label']
+  df.columns = columns_list
+  num = (df['label']==curr_flowLabel).sum()
+  return num
 
 
 
 def main():
   #list of each label type
-  label_list = ["Web browsing","Video Streaming","Video Conferencing","File Downloading"]
+  label_list = ["Web browsing","VideosStreaming","Video Conferencing","File Downloading"]
   #length of label list
-  label_len=len(label_list)
+  label_len=(len(label_list)+1)
 
   flowList = []
 
   #iterate through each label to get atleast 25 samples
-  i=0
+  i=1
+  y=0
+  p=0
+  #stop = 0
+  keep_coll=0
   while(i<label_len):
-    user_input = input("Ready for "+label_list[i]+"?")
+    #change what user_input is based on whether we are still collecting or not
+    if(keep_coll == 0):
+      user_input = input("Ready for "+label_list[i-1]+"?")  #moving on
+    else:
+      user_input=1  #still collecting
+
     if(user_input):   #do not increment until user input
-      i=i+1
       #while the len of the
-      while(len(flowList)<24):  
+      while((len(flowList)<24)):
+        keep_coll=1
         print("gathering data")
         pkts = sniff(filter="not port ssh and not port domain", prn = lambda x: fields_extraction(x, flowList, i), count = 3000)
         
       #only append the data once we have 25+ flows of current activity
-      if(i==0):
-        flowChecker(flowList, "w")  #for creating and writing the csv
-      else:
-        flowChecker(flowList, "a")  #for appending and not overwriting instead
-
-      #empty out the list array for next flow type 
-      flowList = []
-
-
+      #if(y==0):
+      #  y=y+1
+      #  flowChecker(flowList, "w")  #for creating and writing the csv
+    
+      #else:
+      #  flowChecker(flowList, "a")  #for appending and not overwriting instead
+    
+    
+      #empty out the list array for next flow type
+      #check if the filtered csv is currently at >= 25 then empty else keep going
+      if(filtered_flowCheck(flowList, i)>24):
+        if(p==0):
+          flowChecker(flowList, "w")  #for creating and writing the csv
+          flowAverage(flowList, "w")
+          p=p+1
+        else:
+          flowChecker(flowList, "a")  #for appending and not overwriting instead
+          flowAverage(flowList, "a")
+        i=i+1
+        keep_coll=0
+        flowList = []
+        #stop = 1
+        
+      #else:
+        #stop = 0
   x=4  #debuggin purpose only
-  
+
+
 main()
 
+'''
+    if(j==0):
+      #temp = flowData[flowData[14] == j]    #retrieve rows with associated label value
+      fD2 = flowData.groupby(flowData.columns[5])[flowData.columns[14]==j].mean()
+
+
+      #write/overwrite to csv
+      with open('flow_feat.csv', 'w') as f:
+        fD2.to_csv(f, header=False)
+    else:
+
+
+      #append to csv
+      with open('flow_feat.csv', 'a') as f:
+        fD2.to_csv(f, header=False)
+
+'''
 
 
 '''
