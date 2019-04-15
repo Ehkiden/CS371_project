@@ -66,7 +66,7 @@ def flowChecker(flowSent, action):
     if(flow[5]>99):
       flowGreat.append(flow)
   #action is whether to write or append
-  F = open('test1.csv', action) 
+  F = open('flowData.csv', action) 
   #convert entire flow list to str and replace brackets with commas
   temp = str(flowGreat)
   temp = temp.replace("],", '\n')
@@ -86,7 +86,6 @@ def flowAverage(tempList, action):
   flow8Tot  = 0
   flow9Tot  = 0
   flow10Tot = 0
-  flow11Tot = 0
   flow12Tot = 0
   for flow in tempList:
     flow5Tot += float(flow[5])
@@ -95,74 +94,112 @@ def flowAverage(tempList, action):
     flow8Tot += float(flow[8])
     flow9Tot += float(flow[9])
     flow10Tot += float(flow[10])
-    flow11Tot += float(flow[11])
     flow12Tot += float(flow[12])
   
   
-  flow5Avg = flow5Tot/len(tempList)
-  flow6Avg = flow6Tot/len(tempList)
-  flow7Avg = flow7Tot/len(tempList)
-  flow8Avg = flow8Tot/len(tempList)
-  flow9Avg = flow9Tot/len(tempList)
-  flow10Avg = flow10Tot/len(tempList)
-  flow11Avg = flow11Tot/len(tempList)
-  flow12Avg = flow12Tot/len(tempList)
+  flow5Avg = int(flow5Tot/len(tempList))
+  flow6Avg = int(flow6Tot/len(tempList))
+  flow7Avg = int(flow7Tot/len(tempList))
+  flow8Avg = int(flow8Tot/len(tempList))
+  flow9Avg = int(flow9Tot/len(tempList))
+  flow10Avg = int(flow10Tot/len(tempList))
+  flow12Avg = int(flow12Tot/len(tempList))
 
   F2 = open('features.csv', action)
-  write = ("%s, %s, %s, %s, %s, %s, %s, %s\n")%(flow5Avg, flow6Avg, flow7Avg, flow8Avg, flow9Avg, flow10Avg, flow11Avg, flow12Avg)
+  write = ("%s, %s, %s, %s, %s, %s, %s\n")%(flow5Avg, flow6Avg, flow7Avg, flow8Avg, flow9Avg, flow10Avg, flow12Avg)
 
   F2.write(write)
   F2.close()
 
+#check if the current flow list meets the sample size requirements
+def filtered_flowCheck(flowList, curr_flowLabel):
+  df = pd.read_csv('flowData.csv')
+  columns_list = ['srcIP', 'dstIP', 'srcPort', 'destPort', 'proto', 'totalPkts', 'srcPkts', 'destPkts', 'totalBytes', 'srcBytes', 'destBytes', 'currTime', 'durrTime', 'label']
+  df.columns = columns_list
+  num = (df['label']==curr_flowLabel).sum()
+  return num
 
+def getAvg():
+  df = pd.read_csv('flowData.csv')
+  columns_list = ['srcIP', 'dstIP', 'srcPort', 'destPort', 'proto', 'totalPkts', 'srcPkts', 'destPkts', 'totalBytes', 'srcBytes', 'destBytes', 'currTime', 'durrTime', 'label']
+  df.columns = columns_list
+
+  avg_totPkts = df.groupby('label')['totalPkts'].mean()
+  avg_srcPkts = df.groupby('label')['srcPkts'].mean()
+  avg_destPkts = df.groupby('label')['destPkts'].mean()
+  avg_totBytes = df.groupby('label')['totalBytes'].mean()
+  avg_srcBytes = df.groupby('label')['srcBytes'].mean()
+  avg_destBytes = df.groupby('label')['destBytes'].mean()
+  avg_durrtime = df.groupby('label')['durrTime'].mean()
+
+  with open('features.csv', 'w') as f:
+    avg_totPkts.to_csv(f, header=False, index=False)
+
+  with open('features.csv', 'a') as f:
+    avg_srcPkts.to_csv(f, header=False, index=False)
+    avg_destPkts.to_csv(f, header=False, index=False)
+    avg_totBytes.to_csv(f, header=False, index=False)
+    avg_srcBytes.to_csv(f, header=False, index=False)
+    avg_destBytes.to_csv(f, header=False, index=False)
+    avg_durrtime.to_csv(f, header=False, index=False)
 
 
 def main():
   #list of each label type
-  label_list = ["Web browsing","Video Streaming","Video Conferencing","File Downloading"]
+  label_list = ["Web browsing","VideosStreaming","Video Conferencing","File Downloading"]
   #length of label list
-  label_len=len(label_list)
+  label_len=(len(label_list)+1)
 
   flowList = []
 
   #iterate through each label to get atleast 25 samples
-  i=0
+  i=1
+  y=0
+  p=0
+  #stop = 0
+  keep_coll=0
   while(i<label_len):
-    user_input = input("Ready for "+label_list[i]+"?")
+    #change what user_input is based on whether we are still collecting or not
+    if(keep_coll == 0):
+      user_input = input("Ready for "+label_list[i-1]+"?")  #moving on
+    else:
+      user_input=1  #still collecting
+
     if(user_input):   #do not increment until user input
-      
       #while the len of the
-      while(len(flowList)<24):
+      while((len(flowList)<24)):
+        keep_coll=1
         print("gathering data")
         pkts = sniff(filter="not port ssh and not port domain", prn = lambda x: fields_extraction(x, flowList, i), count = 3000)
         
-      #only append the data once we have 25+ flows of current activity
-      if(i==0):
+#      only append the data once we have 25+ flows of current activity
+      if(y==0):
+        y=y+1
         flowChecker(flowList, "w")  #for creating and writing the csv
-        flowAverage(flowList, "w")
+    
       else:
         flowChecker(flowList, "a")  #for appending and not overwriting instead
-        flowAverage(flowList, "a")
     
-      #empty out the list array for next flow type 
-      flowList = []
-      i=i+1
-
-  #once the data has been gathered, then find the avg of each feature per label
-  
-  #load the data
-  flowData = pd.read_csv('test1.csv')
-
-  j=0
-  while(j<label_len):
-
-    fD2 = flowData.groupby(flowData.columns[5])[flowData.columns[14]==j].mean()
-
-    with open('flow_feat.csv', 'w') as f:
-      fD2.to_csv(f, header=False)
-      
+    
+      #empty out the list array for next flow type
+      #check if the filtered csv is currently at >= 25 then empty else keep going
+      if(filtered_flowCheck(flowList, i)>24):
+        if(p==0):
+#          flowChecker(flowList, "w")  #for creating and writing the csv
+          flowAverage(flowList, "w")
+          p=p+1
+        else:
+#          sflowChecker(flowList, "a")  #for appending and not overwriting instead
+          flowAverage(flowList, "a")
+        i=i+1
+        keep_coll=0
+        flowList = []
+        #stop = 1
+        
+      #else:
+        #stop = 0
   x=4  #debuggin purpose only
-
+  getAvg()
 
 main()
 
