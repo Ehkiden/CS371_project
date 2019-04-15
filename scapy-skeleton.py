@@ -1,5 +1,5 @@
 from scapy.all import sniff
-#import pandas as pd
+import pandas as pd
 import numpy as np
 import sys
 import socket 
@@ -86,7 +86,6 @@ def flowAverage(tempList, action):
   flow8Tot  = 0
   flow9Tot  = 0
   flow10Tot = 0
-  flow11Tot = 0
   flow12Tot = 0
   for flow in tempList:
     flow5Tot += float(flow[5])
@@ -95,65 +94,103 @@ def flowAverage(tempList, action):
     flow8Tot += float(flow[8])
     flow9Tot += float(flow[9])
     flow10Tot += float(flow[10])
-    flow11Tot += float(flow[11])
     flow12Tot += float(flow[12])
   
   
-  flow5Avg = flow5Tot/len(tempList)
-  flow6Avg = flow6Tot/len(tempList)
-  flow7Avg = flow7Tot/len(tempList)
-  flow8Avg = flow8Tot/len(tempList)
-  flow9Avg = flow9Tot/len(tempList)
-  flow10Avg = flow10Tot/len(tempList)
-  flow11Avg = flow11Tot/len(tempList)
-  flow12Avg = flow12Tot/len(tempList)
+  flow5Avg = int(flow5Tot/len(tempList))
+  flow6Avg = int(flow6Tot/len(tempList))
+  flow7Avg = int(flow7Tot/len(tempList))
+  flow8Avg = int(flow8Tot/len(tempList))
+  flow9Avg = int(flow9Tot/len(tempList))
+  flow10Avg = int(flow10Tot/len(tempList))
+  flow12Avg = int(flow12Tot/len(tempList))
 
   F2 = open('features.csv', action)
-  write = ("%s, %s, %s, %s, %s, %s, %s, %s\n")%(flow5Avg, flow6Avg, flow7Avg, flow8Avg, flow9Avg, flow10Avg, flow11Avg, flow12Avg)
+  write = ("%s, %s, %s, %s, %s, %s, %s\n")%(flow5Avg, flow6Avg, flow7Avg, flow8Avg, flow9Avg, flow10Avg, flow12Avg)
 
   F2.write(write)
   F2.close()
 
+def filtered_flowCheck(flowList, curr_flowLabel):
+  df = pd.read_csv('test1.csv')
+  columns_list = ['srcIP', 'dstIP', 'srcPort', 'destPort', 'proto', 'totalPkts', 'srcPkts', 'destPkts', 'totalBytes', 'srcBytes', 'destBytes', 'currTime', 'durrTime', 'label']
+  df.columns = columns_list
+  num = (df['label']==curr_flowLabel).sum()
+  return num
 
 
 
 def main():
   #list of each label type
-  label_list = ["Web browsing","Video Streaming","Video Conferencing","File Downloading"]
+  label_list = ["Web browsing","VideosStreaming","Video Conferencing","File Downloading"]
   #length of label list
-  label_len=len(label_list)
+  label_len=(len(label_list)+1)
 
   flowList = []
 
   #iterate through each label to get atleast 25 samples
-  i=0
+  i=1
+  y=0
+  p=0
+  stop = 0
   while(i<label_len):
-    user_input = input("Ready for "+label_list[i]+"?")
-    if(user_input):   #do not increment until user input
       
+    user_input = input("Ready for "+label_list[i-1]+"?")
+    if(user_input):   #do not increment until user input
       #while the len of the
-      while(len(flowList)<24):
+      while((len(flowList)<24) and (stop != 1)):
         print("gathering data")
         pkts = sniff(filter="not port ssh and not port domain", prn = lambda x: fields_extraction(x, flowList, i), count = 3000)
         
       #only append the data once we have 25+ flows of current activity
-      if(i==0):
+      if(y==0):
+        y=y+1
         flowChecker(flowList, "w")  #for creating and writing the csv
-        flowAverage(flowList, "w")
+    
       else:
         flowChecker(flowList, "a")  #for appending and not overwriting instead
-        flowAverage(flowList, "a")
     
-      #empty out the list array for next flow type 
-      flowList = []
-      i=i+1
-
-
+    
+      #empty out the list array for next flow type
+      #check if the filtered csv is currently at >= 25 then empty else keep going
+      if(filtered_flowCheck(flowList, i)>24):
+        i=i+1
+        if(p==0):
+          flowAverage(flowList, "w")
+          p=p+1
+        else:
+          flowAverage(flowList, "a")
+              
+        flowList = []
+        stop = 1
+        
+      else:
+        stop = 0
+  
+  
+  
   x=4  #debuggin purpose only
 
 
 main()
 
+'''
+    if(j==0):
+      #temp = flowData[flowData[14] == j]    #retrieve rows with associated label value
+      fD2 = flowData.groupby(flowData.columns[5])[flowData.columns[14]==j].mean()
+
+
+      #write/overwrite to csv
+      with open('flow_feat.csv', 'w') as f:
+        fD2.to_csv(f, header=False)
+    else:
+
+
+      #append to csv
+      with open('flow_feat.csv', 'a') as f:
+        fD2.to_csv(f, header=False)
+
+'''
 
 
 '''
