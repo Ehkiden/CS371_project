@@ -61,7 +61,6 @@ def fields_extraction(x, flowList, flowLabel):
 def flowChecker(flowSent, action):
   #parse flowList and pop any flows that are less than 100
   flowGreat = []
-  
   for flow in flowSent:
     if(flow[5]>99):
       flowGreat.append(flow)
@@ -71,50 +70,12 @@ def flowChecker(flowSent, action):
   temp = str(flowGreat)
   temp = temp.replace("],", '\n')
   temp = temp.replace("[[", '')
-  temp = temp.replace("]]", '\n')
+  temp = temp.replace("]]", '')
   temp = temp.replace("[", '')
   temp = temp.replace("]", '')
   temp = temp.replace("'", '')
   temp = temp.replace(" ", '')
   F.write(temp)
-  F.close()
-
-def flowAverage(tempList, action):
-  flow5Tot  = 0
-  flow6Tot  = 0
-  flow7Tot  = 0
-  flow8Tot  = 0
-  flow9Tot  = 0
-  flow10Tot = 0
-  flow11Tot = 0
-  flow12Tot = 0
-  for flow in tempList:
-    flow5Tot += float(flow[5])
-    flow6Tot += float(flow[6])
-    flow7Tot += float(flow[7])
-    flow8Tot += float(flow[8])
-    flow9Tot += float(flow[9])
-    flow10Tot += float(flow[10])
-    flow11Tot += float(flow[11])
-    flow12Tot += float(flow[12])
-  
-  
-  flow5Avg = flow5Tot/len(tempList)
-  flow6Avg = flow6Tot/len(tempList)
-  flow7Avg = flow7Tot/len(tempList)
-  flow8Avg = flow8Tot/len(tempList)
-  flow9Avg = flow9Tot/len(tempList)
-  flow10Avg = flow10Tot/len(tempList)
-  flow11Avg = flow11Tot/len(tempList)
-  flow12Avg = flow12Tot/len(tempList)
-
-  F2 = open('features.csv', action)
-  write = ("%s, %s, %s, %s, %s, %s, %s, %s\n")%(flow5Avg, flow6Avg, flow7Avg, flow8Avg, flow9Avg, flow10Avg, flow11Avg, flow12Avg)
-
-  F2.write(write)
-  F2.close()
-
-
 
 
 def main():
@@ -123,30 +84,25 @@ def main():
   #length of label list
   label_len=len(label_list)
 
-  flowList = []
-
   #iterate through each label to get atleast 25 samples
   i=0
   while(i<label_len):
     user_input = input("Ready for "+label_list[i]+"?")
     if(user_input):   #do not increment until user input
-      
-      #while the len of the
-      while(len(flowList)<24):
+      i=i+1
+      #while the len of the 
+      while(len(flowList)<24):  
         print("gathering data")
         pkts = sniff(filter="not port ssh and not port domain", prn = lambda x: fields_extraction(x, flowList, i), count = 3000)
         
       #only append the data once we have 25+ flows of current activity
       if(i==0):
         flowChecker(flowList, "w")  #for creating and writing the csv
-        flowAverage(flowList, "w")
       else:
         flowChecker(flowList, "a")  #for appending and not overwriting instead
-        flowAverage(flowList, "a")
-    
+
       #empty out the list array for next flow type 
       flowList = []
-      i=i+1
 
   #once the data has been gathered, then find the avg of each feature per label
   
@@ -163,25 +119,19 @@ def main():
       
   x=4  #debuggin purpose only
 
-
 main()
 
 '''
     if(j==0):
       #temp = flowData[flowData[14] == j]    #retrieve rows with associated label value
       fD2 = flowData.groupby(flowData.columns[5])[flowData.columns[14]==j].mean()
-
-
       #write/overwrite to csv
       with open('flow_feat.csv', 'w') as f:
         fD2.to_csv(f, header=False)
     else:
-
-
       #append to csv
       with open('flow_feat.csv', 'a') as f:
         fD2.to_csv(f, header=False)
-
 '''
 
 
@@ -190,10 +140,8 @@ Soooooooooo
 What they want is a set of packets to represent a flow
 meaning that each flow will contain packets where the src_ip, dest_ip, protocol, src_port, dest_port are crossed
 ref with each other or the same
-
 This would look like:
 duration(not needed), src_ip, dest_ip, protocol, src_port, dest_port, bytes_in, bytes_out, seq, ack, src_transfer_rate, dest_transfer_rate, 
-
 src_ip    - This will be our ip (for simplicity sake...)
 src_port  - The src ip's port
 dest_ip   - The dest ip that is seen with the src ip
@@ -207,24 +155,19 @@ ack       - The ack # used with the seq # to identify is the session is current
 ****************
 src_transfer_rate   - Just the percentage of bytes_in/(bytes_in + bytes_out)
 dest_transfer_rate  - Just the percentage of bytes_out/(bytes_in + bytes_out)
-
 This should be good enough for what we need ^
 ----------------------------------------------
 The labels will be applied after we have both packet flows into the tuple(which goes into the .csv)
-
 As for label defs:
-
 * Web Browsing should always use 80/tcp and/or 443/tcp and be a relatively small byte count
 * Video Streaming will use tcp as well as udp depending on the type of stream. Youtube uses tcp for thier prerendered videos 
   while Live streaming sites will use UDP as they are no prerendered 
 * Video Conference will use UDP
 * File download via browser will use the same method as web browsing and stuff like scp will use 21/tcp and 22/tcp
-
 '''
 
 '''
 example packet from twicth streams
-
 52.223.224.71,192.168.1.155,https,11203,
 Ether / IP / TCP 52.223.224.71:https > 192.168.1.155:11203 A / Raw
 ###[ Ethernet ]###
@@ -258,4 +201,3 @@ Ether / IP / TCP 52.223.224.71:https > 192.168.1.155:11203 A / Raw
         urgptr    = 0
         options   = []
 '''
-
