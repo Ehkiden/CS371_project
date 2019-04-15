@@ -16,8 +16,19 @@ from sklearn.neural_network import MLPClassifier                #machine learnin
 
 try:
     # importing the csv file into a data structure known as pandas DataFrame
-    df = pd.read_csv("test1.csv", header=None)
+    df = pd.read_csv('test1.csv', header=None)
     print(df)
+    #df2 = pd.read_csv("features.csv", header=None)
+    #print(df2)
+
+    feat = []
+    with open('features.csv') as csvfile:
+        readCSV = csv.reader(csvfile, delimiter=',')
+        for row in readCSV:
+            feat.append(row)
+#print(row)
+#print(row[0])
+#print(row[0],row[1],row[2],)
 except ValueError:
     print("Error... no csv file or file is curruppted")
 
@@ -26,12 +37,22 @@ except ValueError:
 columns_list = ['srcIP', 'dstIP', 'srcPort', 'destPort', 'proto', 'totalPkts', 'srcPkts', 'destPkts', 'totalBytes', 'srcBytes', 'destBytes','currTime', 'durrTime', 'label']
 df.columns = columns_list
 
+#columns_list2 = ['totalPkts', 'srcPkts', 'destPkts', 'totalBytes', 'srcBytes', 'destBytes','currTime', 'durrTime', 'label']
+#df2.columns = columns_list2
+
 #These are the actual features that will be used to feed the machine learning model
 features = ['totalPkts', 'srcPkts', 'destPkts', 'totalBytes', 'srcBytes', 'destBytes', 'currTime', 'durrTime']
 
 X = df[features]    #This are features, needed for training and testing sets
 y = df['label']     #This are labels, needed for training and testing sets
+#feat_X = df2[features]
+#feat_Y = df2['label']
 
+print('feat 0:', feat[0], '\n')
+print('feat 1:', feat[1], '\n')
+print('feat 2:', feat[2], '\n')
+print('feat 3:', feat[3], '\n')
+#print('feat Y:', feat_Y)
 #Labels----------------------------------------------------------------
 # 1 = Web browsing                      NEED 25 FLOWS FOR THIS CASE
 # 2 = Video streaming (ie Youtube)      NEED 25 FLOWS FOR THIS CASE
@@ -75,12 +96,12 @@ for i in range(0, 10):
     clf = tree.DecisionTreeClassifier()                                         #initialize the Decision Tree
     clf.fit(X_train, y_train)                                                   #Build a decision tree classifier from the training set (X, y).
     y_pred_class = clf.predict(X_test)                                          #Predict class or regression value for X. Returns the predicted classes/values
-    print('y_pred_class is: ', y_pred_class)
+    #print('y_pred_class is: ', y_pred_class)
 
-    acc = accuracy_score(y_test, y_pred_class)
-    print('accScores is: ', acc)
-    result = clf.score(X_test, y_test)
-    print('results is: ', result)
+    #acc = accuracy_score(y_test, y_pred_class)
+    #print('accScores is: ', acc)
+    #result = clf.score(X_test, y_test)
+    #print('results is: ', result)
     
     TreeAccScores.append(accuracy_score(y_test, y_pred_class))                              #accuracy scores
     TreePrecsionScores.append(precision_score(y_test, y_pred_class, average='weighted'))    #precsion scores
@@ -94,12 +115,12 @@ for i in range(0, 10):
     clf.fit(X_train, y_train)
 
     y_pred_class = clf.predict(X_test)                                          #Predict class or regression value for X. Returns the predicted classes/values
-    print('y_pred_class is: ', y_pred_class)
+    #print('y_pred_class is: ', y_pred_class)
     
-    acc = accuracy_score(y_test, y_pred_class)
-    print('accScores is: ', acc)
-    result = clf.score(X_test, y_test)
-    print('results is: ', result)
+    #acc = accuracy_score(y_test, y_pred_class)
+    #print('accScores is: ', acc)
+    #result = clf.score(X_test, y_test)
+    #print('results is: ', result)
     
     mlpAccScores.append(accuracy_score(y_test, y_pred_class))                              #accuracy scores
     mlpPrecsionScores.append(precision_score(y_test, y_pred_class, average='weighted'))    #precsion scores
@@ -113,12 +134,12 @@ for i in range(0, 10):
     clf.fit(X_train, y_train)
 
     y_pred_class = clf.predict(X_test)                                          #Predict class or regression value for X. Returns the predicted classes/values
-    print('y_pred_class is: ', y_pred_class)
+    #print('y_pred_class is: ', y_pred_class)
     
-    acc = accuracy_score(y_test, y_pred_class)
-    print('accScores is: ', acc)
-    result = clf.score(X_test, y_test)
-    print('results is: ', result)
+    #acc = accuracy_score(y_test, y_pred_class)
+    #print('accScores is: ', acc)
+    #result = clf.score(X_test, y_test)
+    #print('results is: ', result)
     
     svcAccScores.append(accuracy_score(y_test, y_pred_class))                              #accuracy scores
     svcPrecsionScores.append(precision_score(y_test, y_pred_class, average='weighted'))    #precsion scores
@@ -166,16 +187,18 @@ x = np.random.randn(1000, 4)
 ind = np.arange(n_bins)
 width = 0.25
 
-fig, axes = plt.subplots(nrows=2, ncols=3)
-ax0, ax1, ax2, ax3, ax4, ax5 = axes.flatten()
+fig, axes = plt.subplots(nrows=1, ncols=5, constrained_layout=True)
+#fig, axes = plt.subplots(nrows=1, ncols=3, constrained_layout=True)
+ax0, ax1, ax2, ax3, ax4 = axes.flatten()
 
 #All Features-------------------------------------------------------------------
 colors = ['red', 'blue', 'green', 'purple']
 labelType = ['Web Browsing', 'Video Streaming', 'Video Conference', 'File Download']
-ax0.hist(x, 7, density=True, histtype='bar', color=colors, label=labelType)
-ax0.legend() #prop={'size': 10}
+ax0.hist(feat, histtype='bar', color=colors, label=labelType)
+ax0.legend() #prop={'size': 5}
 ax0.set_title('Feature Details')
 ax0.set_ylabel('Occurrences')
+#ax0.set_xticks(7, ('totalPkts', 'srcPkts', 'destPkts', 'totalBytes', 'srcBytes', 'destBytes', 'currTime', 'durrTime'))
 ax0.set_xlabel('Features')
 
 #Accuracy-----------------------------------------------------------------------
@@ -187,7 +210,7 @@ ax1.set_title('Accuracy')
 ax1.set_ylabel('Accuracy Score')
 ax1.set_xticks(ind, ('1', '2', '3', '4', '5', '6', '7', '8', '9', '10'))
 ax1.set_xlabel('Executions')
-ax1.legend((treeBarAcc[0], mlpBarAcc[0], svcBarAcc[0]), ('Decision Tree', 'Netural Network', 'Support Vector Machine'))
+ax1.legend((treeBarAcc[0], mlpBarAcc[0], svcBarAcc[0]), ('Decision Tree', 'Netural Network', 'Support Vector Machine'), prop={'size': 5})
 
 #Precision----------------------------------------------------------------------
 treeBarPre = ax2.bar(ind, TreePrecsionScores, width)
@@ -198,7 +221,7 @@ ax2.set_title('Precision')
 ax2.set_ylabel('Precision Score')
 ax2.set_xticks(ind, ('1', '2', '3', '4', '5', '6', '7', '8', '9', '10'))
 ax2.set_xlabel('Executions')
-ax2.legend((treeBarPre[0], mlpBarPre[0], svcBarPre[0]), ('Decision Tree', 'Netural Network', 'Support Vector Machine'))
+ax2.legend((treeBarPre[0], mlpBarPre[0], svcBarPre[0]), ('Decision Tree', 'Netural Network', 'Support Vector Machine'), prop={'size': 5})
 
 #Recall-------------------------------------------------------------------------
 treeBarRecall = ax3.bar(ind, TreeRecallScores, width)
@@ -209,7 +232,7 @@ ax3.set_title('Recall')
 ax3.set_ylabel('Recall Score')
 ax3.set_xticks(ind, ('1', '2', '3', '4', '5', '6', '7', '8', '9', '10'))
 ax3.set_xlabel('Executions')
-ax3.legend((treeBarRecall[0], mlpBarRecall[0], svcBarRecall[0]), ('Decision Tree', 'Netural Network', 'Support Vector Machine'))
+ax3.legend((treeBarRecall[0], mlpBarRecall[0], svcBarRecall[0]), ('Decision Tree', 'Netural Network', 'Support Vector Machine'), prop={'size': 5})
 
 #F1-----------------------------------------------------------------------------
 treeBarF1 = ax4.bar(ind, TreeF1Scores, width)
@@ -220,8 +243,10 @@ ax4.set_title('F1')
 ax4.set_ylabel('F1 Score')
 ax4.set_xticks(ind, ('1', '2', '3', '4', '5', '6', '7', '8', '9', '10'))
 ax4.set_xlabel('Executions')
-ax4.legend((treeBarF1[0], mlpBarF1[0], svcBarF1[0]), ('Decision Tree', 'Netural Network', 'Support Vector Machine'))
+ax4.legend((treeBarF1[0], mlpBarF1[0], svcBarF1[0]), ('Decision Tree', 'Netural Network', 'Support Vector Machine'), prop={'size': 5})
 
+#fig.tight_layout()
+plt.show()
 '''
 #-----------------------------------------------------------------------------
 treeBar = ax5.bar(ind, TreeAccScores, width)
@@ -249,8 +274,7 @@ ax4.set_title('stacked bar')
 ax5.hist(x, n_bins, density=True, histtype='bar', stacked=True)
 ax5.set_title('stacked bar')
 '''
-fig.tight_layout()
-plt.show()
+
 
 
 
