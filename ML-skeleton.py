@@ -16,7 +16,7 @@ from sklearn.neural_network import MLPClassifier                #machine learnin
 
 try:
     # importing the csv file into a data structure known as pandas DataFrame
-    df = pd.read_csv('test.csv', header=None)
+    df = pd.read_csv('flowData.csv', header=None)
     print(df)
     #df2 = pd.read_csv("features.csv", header=None)
     #print(df2)
@@ -156,7 +156,7 @@ for i in range(0, 10):
 #===============================================================================
 #EVALUATION PORTION-------------------------------------------------------------
     #here you are supposed to calculate the evaluation measures indicated in the project proposal (accuracy, F-score etc)
-
+'''
 print('Complete TreeAccScores array: ', TreeAccScores)
 print('Complete TreePrecsionScores array: ', TreePrecsionScores)
 print('Complete TreeRecallScores array: ', TreeRecallScores)
@@ -171,26 +171,15 @@ print('Complete svcAccScores array: ', svcAccScores)
 print('Complete svcPrecsionScores array: ', svcPrecsionScores)
 print('Complete svcRecallScores array: ', svcRecallScores)
 print('Complete svcF1Scores array: ', svcF1Scores)
-
+'''
 #===============================================================================
 #Graph results for machine learning models and features for each label
-#var for features
-f1 = 'TotalPkts'
-f2 = 'SrcPkts'
-f3 = 'DestPkts'
-f4 = 'TotalBytes'
-f5 = 'SrcBytes'
-f6 = 'DestBytes'
-f7 = 'DurrTime'
-
-np.random.seed(19680801)
-
 n_bins = 10
 x = np.random.randn(1000, 4)
 ind = np.arange(n_bins)
 ind2 = np.arange(len(WebB))
 width = 0.35
-
+executions = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
 #fig, axes = plt.subplots(nrows=1, ncols=5, constrained_layout=True)
 fig, axes = plt.subplots(nrows=2, ncols=4, constrained_layout=True)
 ax0, ax1, ax2, ax3, ax4, ax5, ax6, ax7 = axes.flatten()
@@ -255,9 +244,11 @@ svcBarAcc = ax4.bar(ind, svcAccScores, width, bottom=mlpAccScores)
 
 ax4.set_title('Accuracy')
 ax4.set_ylabel('Accuracy Score')
-ax4.set_xticks(ind, ('1', '2', '3', '4', '5', '6', '7', '8', '9', '10'))
+#ax4.set_xticks(ind, ('1', '2', '3', '4', '5', '6', '7', '8', '9', '10'))
+ax4.set_xticks(ind)
+ax4.set_xticklabels(executions)
 ax4.set_xlabel('Executions')
-ax4.legend((treeBarAcc[0], mlpBarAcc[0], svcBarAcc[0]), ('Decision Tree', 'Netural Network', 'Support Vector Machine'), prop={'size': 5})
+ax4.legend((treeBarAcc[0], mlpBarAcc[0], svcBarAcc[0]), ('Decision Tree', 'Netural Network', 'Support Vector Machine'), prop={'size': 4})
 
 #Precision----------------------------------------------------------------------
 treeBarPre = ax5.bar(ind, TreePrecsionScores, width)
@@ -266,9 +257,11 @@ svcBarPre = ax5.bar(ind, svcPrecsionScores, width, bottom=mlpPrecsionScores)
 
 ax5.set_title('Precision')
 ax5.set_ylabel('Precision Score')
-ax5.set_xticks(ind, ('1', '2', '3', '4', '5', '6', '7', '8', '9', '10'))
+#ax5.set_xticks(ind, ('1', '2', '3', '4', '5', '6', '7', '8', '9', '10'))
+ax5.set_xticks(ind)
+ax5.set_xticklabels(executions)
 ax5.set_xlabel('Executions')
-ax5.legend((treeBarPre[0], mlpBarPre[0], svcBarPre[0]), ('Decision Tree', 'Netural Network', 'Support Vector Machine'), prop={'size': 5})
+ax5.legend((treeBarPre[0], mlpBarPre[0], svcBarPre[0]), ('Decision Tree', 'Netural Network', 'Support Vector Machine'), prop={'size': 4})
 
 #Recall-------------------------------------------------------------------------
 treeBarRecall = ax6.bar(ind, TreeRecallScores, width)
@@ -277,9 +270,11 @@ svcBarRecall = ax6.bar(ind, svcRecallScores, width, bottom=mlpRecallScores)
 
 ax6.set_title('Recall')
 ax6.set_ylabel('Recall Score')
-ax6.set_xticks(ind, ('1', '2', '3', '4', '5', '6', '7', '8', '9', '10'))
+#ax6.set_xticks(ind, ('1', '2', '3', '4', '5', '6', '7', '8', '9', '10'))
+ax6.set_xticks(ind)
+ax6.set_xticklabels(executions)
 ax6.set_xlabel('Executions')
-ax6.legend((treeBarRecall[0], mlpBarRecall[0], svcBarRecall[0]), ('Decision Tree', 'Netural Network', 'Support Vector Machine'), prop={'size': 5})
+ax6.legend((treeBarRecall[0], mlpBarRecall[0], svcBarRecall[0]), ('Decision Tree', 'Netural Network', 'Support Vector Machine'), prop={'size': 4})
 
 #F1-----------------------------------------------------------------------------
 treeBarF1 = ax7.bar(ind, TreeF1Scores, width)
@@ -288,9 +283,11 @@ svcBarF1 = ax7.bar(ind, svcF1Scores, width, bottom=mlpF1Scores)
 
 ax7.set_title('F1')
 ax7.set_ylabel('F1 Score')
-ax7.set_xticks(ind, ('1', '2', '3', '4', '5', '6', '7', '8', '9', '10'))
+#ax7.set_xticks(ind, ('1', '2', '3', '4', '5', '6', '7', '8', '9', '10'))
+ax7.set_xticks(ind)
+ax7.set_xticklabels(executions)
 ax7.set_xlabel('Executions')
-ax7.legend((treeBarF1[0], mlpBarF1[0], svcBarF1[0]), ('Decision Tree', 'Netural Network', 'Support Vector Machine'), prop={'size': 5})
+ax7.legend((treeBarF1[0], mlpBarF1[0], svcBarF1[0]), ('Decision Tree', 'Netural Network', 'Support Vector Machine'), prop={'size': 4})
 
 #fig.tight_layout()
 plt.show()
