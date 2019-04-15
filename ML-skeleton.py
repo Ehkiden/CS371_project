@@ -1,26 +1,21 @@
-import pandas as pd     #library
-import numpy as np      #library
-import matplotlib.pyplot as plt   #library
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
 import csv
-
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import precision_score
 from sklearn.metrics import recall_score
 from sklearn.metrics import f1_score
-from sklearn.svm import SVC                                     #machine learning model
-from sklearn.svm import LinearSVC                               #machine learning model
-from sklearn import tree                                        #machine learning model
-from sklearn.neural_network import MLPClassifier                #machine learning model
+from sklearn.svm import SVC
+from sklearn.svm import LinearSVC
+from sklearn import tree
+from sklearn.neural_network import MLPClassifier
 
 
 try:
     # importing the csv file into a data structure known as pandas DataFrame
     df = pd.read_csv('flowData.csv', header=None)
-    print(df)
-    #df2 = pd.read_csv("features.csv", header=None)
-    #print(df2)
-
     feat = []
     line = []
     with open('features.csv') as csvfile:
@@ -33,7 +28,6 @@ try:
 except ValueError:
     print("Error... no csv file or file is curruppted")
 
-# You might not need this next line if you do not care about losing information about flow_id etc.
 #These are the names that will be assigned to the fields of the csv --> make sure to name these correctly
 columns_list = ['srcIP', 'dstIP', 'srcPort', 'destPort', 'proto', 'totalPkts', 'srcPkts', 'destPkts', 'totalBytes', 'srcBytes', 'destBytes', 'currTime', 'durrTime', 'label']
 df.columns = columns_list
@@ -61,15 +55,7 @@ print('video confrience', VidCon)
 print('feat 3:', feat[3])
 print('File download', FileDL)
 
-
-#Labels----------------------------------------------------------------
-# 1 = Web browsing                      NEED 25 FLOWS FOR THIS CASE
-# 2 = Video streaming (ie Youtube)      NEED 25 FLOWS FOR THIS CASE
-# 3 = Video conference (ie skype)       NEED 25 FLOWS FOR THIS CASE
-# 4 = File download                     NEED 25 FLOWS FOR THIS CASE
-#                                       FOR A TOTAL OF 100 SAMPLES (FLOWS)
-
-#Will run the machine learning model 10 times (cross validation)
+#Will run the machine learning model 10 times (cross validation) and store the values
 TreeAccScores = []
 TreePrecsionScores = []
 TreeRecallScores = []
@@ -92,11 +78,6 @@ for i in range(0, 10):
 
     #MACHINE LEARNING MODEL 1---------------------------------------------------
     #Decision Trees
-    #Reference: https://scikit-learn.org/stable/modules/tree.html#tree
-    #Reference: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.accuracy_score.html
-    #Reference: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.precision_score.html#sklearn.metrics.precision_score
-    #Reference: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.recall_score.html#sklearn.metrics.recall_score
-    #Reference: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.f1_score.html#sklearn.metrics.f1_score
     
     clf = tree.DecisionTreeClassifier()                                         #initialize the Decision Tree
     clf.fit(X_train, y_train)                                                   #Build a decision tree classifier from the training set (X, y).
@@ -118,14 +99,7 @@ for i in range(0, 10):
 
     clf = MLPClassifier()
     clf.fit(X_train, y_train)
-
     y_pred_class = clf.predict(X_test)                                          #Predict class or regression value for X. Returns the predicted classes/values
-    #print('y_pred_class is: ', y_pred_class)
-    
-    #acc = accuracy_score(y_test, y_pred_class)
-    #print('accScores is: ', acc)
-    #result = clf.score(X_test, y_test)
-    #print('results is: ', result)
     
     mlpAccScores.append(accuracy_score(y_test, y_pred_class))                              #accuracy scores
     mlpPrecsionScores.append(precision_score(y_test, y_pred_class, average='weighted'))    #precsion scores
@@ -137,14 +111,7 @@ for i in range(0, 10):
     clf = SVC(gamma='auto')     #SVC USE THIS
     clf = LinearSVC()  #Linear SVC
     clf.fit(X_train, y_train)
-
     y_pred_class = clf.predict(X_test)                                          #Predict class or regression value for X. Returns the predicted classes/values
-    #print('y_pred_class is: ', y_pred_class)
-    
-    #acc = accuracy_score(y_test, y_pred_class)
-    #print('accScores is: ', acc)
-    #result = clf.score(X_test, y_test)
-    #print('results is: ', result)
     
     svcAccScores.append(accuracy_score(y_test, y_pred_class))                              #accuracy scores
     svcPrecsionScores.append(precision_score(y_test, y_pred_class, average='weighted'))    #precsion scores
