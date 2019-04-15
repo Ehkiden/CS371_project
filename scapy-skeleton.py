@@ -149,24 +149,24 @@ def main():
         print("gathering data")
         pkts = sniff(filter="not port ssh and not port domain", prn = lambda x: fields_extraction(x, flowList, i), count = 3000)
         
-      #only append the data once we have 25+ flows of current activity
-      #if(y==0):
-      #  y=y+1
-      #  flowChecker(flowList, "w")  #for creating and writing the csv
+#      only append the data once we have 25+ flows of current activity
+      if(y==0):
+        y=y+1
+        flowChecker(flowList, "w")  #for creating and writing the csv
     
-      #else:
-      #  flowChecker(flowList, "a")  #for appending and not overwriting instead
+      else:
+        flowChecker(flowList, "a")  #for appending and not overwriting instead
     
     
       #empty out the list array for next flow type
       #check if the filtered csv is currently at >= 25 then empty else keep going
       if(filtered_flowCheck(flowList, i)>24):
         if(p==0):
-          flowChecker(flowList, "w")  #for creating and writing the csv
+#          flowChecker(flowList, "w")  #for creating and writing the csv
           flowAverage(flowList, "w")
           p=p+1
         else:
-          flowChecker(flowList, "a")  #for appending and not overwriting instead
+#          sflowChecker(flowList, "a")  #for appending and not overwriting instead
           flowAverage(flowList, "a")
         i=i+1
         keep_coll=0
