@@ -16,53 +16,58 @@ from sklearn.neural_network import MLPClassifier                #machine learnin
 
 try:
     # importing the csv file into a data structure known as pandas DataFrame
-    df = pd.read_csv('test1.csv', header=None)
+    df = pd.read_csv('test.csv', header=None)
     print(df)
     #df2 = pd.read_csv("features.csv", header=None)
     #print(df2)
 
     feat = []
+    line = []
     with open('features.csv') as csvfile:
         readCSV = csv.reader(csvfile, delimiter=',')
         for row in readCSV:
-            feat.append(row)
-#print(row)
-#print(row[0])
-#print(row[0],row[1],row[2],)
+            for i in row:
+                line.append(int(i))
+            feat.append(line)
+            line = []
 except ValueError:
     print("Error... no csv file or file is curruppted")
 
 # You might not need this next line if you do not care about losing information about flow_id etc.
 #These are the names that will be assigned to the fields of the csv --> make sure to name these correctly
-columns_list = ['srcIP', 'dstIP', 'srcPort', 'destPort', 'proto', 'totalPkts', 'srcPkts', 'destPkts', 'totalBytes', 'srcBytes', 'destBytes','currTime', 'durrTime', 'label']
+columns_list = ['srcIP', 'dstIP', 'srcPort', 'destPort', 'proto', 'totalPkts', 'srcPkts', 'destPkts', 'totalBytes', 'srcBytes', 'destBytes', 'currTime', 'durrTime', 'label']
 df.columns = columns_list
 
-#columns_list2 = ['totalPkts', 'srcPkts', 'destPkts', 'totalBytes', 'srcBytes', 'destBytes','currTime', 'durrTime', 'label']
-#df2.columns = columns_list2
-
 #These are the actual features that will be used to feed the machine learning model
-features = ['totalPkts', 'srcPkts', 'destPkts', 'totalBytes', 'srcBytes', 'destBytes', 'currTime', 'durrTime']
+features = ['totalPkts', 'srcPkts', 'destPkts', 'totalBytes', 'srcBytes', 'destBytes', 'durrTime']
 
 X = df[features]    #This are features, needed for training and testing sets
 y = df['label']     #This are labels, needed for training and testing sets
-#feat_X = df2[features]
-#feat_Y = df2['label']
 
-print('feat 0:', feat[0], '\n')
-print('feat 1:', feat[1], '\n')
-print('feat 2:', feat[2], '\n')
-print('feat 3:', feat[3], '\n')
-#print('feat Y:', feat_Y)
+WebB = feat[0]
+VidSt = feat[1]
+VidCon = feat[2]
+FileDL = feat[3]
+
+print('feat 0:', feat[0])
+print('web browsing', WebB)
+
+print('feat 1:', feat[1])
+print('video stream', VidSt)
+
+print('feat 2:', feat[2])
+print('video confrience', VidCon)
+
+print('feat 3:', feat[3])
+print('File download', FileDL)
+
+
 #Labels----------------------------------------------------------------
 # 1 = Web browsing                      NEED 25 FLOWS FOR THIS CASE
 # 2 = Video streaming (ie Youtube)      NEED 25 FLOWS FOR THIS CASE
 # 3 = Video conference (ie skype)       NEED 25 FLOWS FOR THIS CASE
 # 4 = File download                     NEED 25 FLOWS FOR THIS CASE
 #                                       FOR A TOTAL OF 100 SAMPLES (FLOWS)
-labelWeb = 1
-labelVStream = 2
-labelVConfrence = 3
-labelFileDL = 4
 
 #Will run the machine learning model 10 times (cross validation)
 TreeAccScores = []
@@ -178,19 +183,19 @@ f5 = 'SrcBytes'
 f6 = 'DestBytes'
 f7 = 'DurrTime'
 
-#sample data
-#sampleDATA = (3,4,1,3,4,6,6,7,5,4)
 np.random.seed(19680801)
 
 n_bins = 10
 x = np.random.randn(1000, 4)
 ind = np.arange(n_bins)
-width = 0.25
+ind2 = np.arange(len(WebB))
+width = 0.35
 
-fig, axes = plt.subplots(nrows=1, ncols=5, constrained_layout=True)
-#fig, axes = plt.subplots(nrows=1, ncols=3, constrained_layout=True)
-ax0, ax1, ax2, ax3, ax4 = axes.flatten()
+#fig, axes = plt.subplots(nrows=1, ncols=5, constrained_layout=True)
+fig, axes = plt.subplots(nrows=2, ncols=4, constrained_layout=True)
+ax0, ax1, ax2, ax3, ax4, ax5, ax6, ax7 = axes.flatten()
 
+'''
 #All Features-------------------------------------------------------------------
 colors = ['red', 'blue', 'green', 'purple']
 labelType = ['Web Browsing', 'Video Streaming', 'Video Conference', 'File Download']
@@ -200,50 +205,92 @@ ax0.set_title('Feature Details')
 ax0.set_ylabel('Occurrences')
 #ax0.set_xticks(7, ('totalPkts', 'srcPkts', 'destPkts', 'totalBytes', 'srcBytes', 'destBytes', 'currTime', 'durrTime'))
 ax0.set_xlabel('Features')
+ax0.set_yscale('log')
+'''
+
+#Web browsing-------------------------------------------------------------------
+print('web browsing: ', WebB)
+ax0.bar(ind2, WebB, width, color='blue')
+ax0.set_title('Web Browsing')
+ax0.set_ylabel('Occurrences')
+ax0.set_xticks(ind2)
+ax0.set_xticklabels(features)
+ax0.set_xlabel('Features')
+ax0.set_yscale('log')
+
+#Video streaming (ie Youtube)---------------------------------------------------
+print('video streaming: ', VidSt)
+ax1.bar(ind2, VidSt, width, color='red')
+ax1.set_title('Video Streaming')
+ax1.set_ylabel('Occurrences')
+ax1.set_xticks(ind2)
+ax1.set_xticklabels(features)
+ax1.set_xlabel('Features')
+ax1.set_yscale('log')
+
+#Video conference (ie skype)----------------------------------------------------
+print('video conference: ', VidCon)
+ax2.bar(ind2, VidCon, width, color='green')
+ax2.set_title('Video Conference')
+ax2.set_ylabel('Occurrences')
+ax2.set_xticks(ind2)
+ax2.set_xticklabels(features)
+ax2.set_xlabel('Features')
+ax2.set_yscale('log')
+
+#File download-----------------------------------------------------------------------
+print('File Download: ', FileDL)
+ax3.bar(ind2, FileDL, width, color='purple')
+ax3.set_title('File Download')
+ax3.set_ylabel('Occurrences')
+ax3.set_xticks(ind2)
+ax3.set_xticklabels(features)
+ax3.set_xlabel('Features')
+ax3.set_yscale('log')
 
 #Accuracy-----------------------------------------------------------------------
-treeBarAcc = ax1.bar(ind, TreeAccScores, width)
-mlpBarAcc = ax1.bar(ind, mlpAccScores, width, bottom=TreeAccScores)
-svcBarAcc = ax1.bar(ind, svcAccScores, width, bottom=mlpAccScores)
+treeBarAcc = ax4.bar(ind, TreeAccScores, width)
+mlpBarAcc = ax4.bar(ind, mlpAccScores, width, bottom=TreeAccScores)
+svcBarAcc = ax4.bar(ind, svcAccScores, width, bottom=mlpAccScores)
 
-ax1.set_title('Accuracy')
-ax1.set_ylabel('Accuracy Score')
-ax1.set_xticks(ind, ('1', '2', '3', '4', '5', '6', '7', '8', '9', '10'))
-ax1.set_xlabel('Executions')
-ax1.legend((treeBarAcc[0], mlpBarAcc[0], svcBarAcc[0]), ('Decision Tree', 'Netural Network', 'Support Vector Machine'), prop={'size': 5})
-
-#Precision----------------------------------------------------------------------
-treeBarPre = ax2.bar(ind, TreePrecsionScores, width)
-mlpBarPre = ax2.bar(ind, mlpPrecsionScores, width, bottom=TreePrecsionScores)
-svcBarPre = ax2.bar(ind, svcPrecsionScores, width, bottom=mlpPrecsionScores)
-
-ax2.set_title('Precision')
-ax2.set_ylabel('Precision Score')
-ax2.set_xticks(ind, ('1', '2', '3', '4', '5', '6', '7', '8', '9', '10'))
-ax2.set_xlabel('Executions')
-ax2.legend((treeBarPre[0], mlpBarPre[0], svcBarPre[0]), ('Decision Tree', 'Netural Network', 'Support Vector Machine'), prop={'size': 5})
-
-#Recall-------------------------------------------------------------------------
-treeBarRecall = ax3.bar(ind, TreeRecallScores, width)
-mlpBarRecall = ax3.bar(ind, mlpRecallScores, width, bottom=TreeRecallScores)
-svcBarRecall = ax3.bar(ind, svcRecallScores, width, bottom=mlpRecallScores)
-
-ax3.set_title('Recall')
-ax3.set_ylabel('Recall Score')
-ax3.set_xticks(ind, ('1', '2', '3', '4', '5', '6', '7', '8', '9', '10'))
-ax3.set_xlabel('Executions')
-ax3.legend((treeBarRecall[0], mlpBarRecall[0], svcBarRecall[0]), ('Decision Tree', 'Netural Network', 'Support Vector Machine'), prop={'size': 5})
-
-#F1-----------------------------------------------------------------------------
-treeBarF1 = ax4.bar(ind, TreeF1Scores, width)
-mlpBarF1 = ax4.bar(ind, mlpF1Scores, width, bottom=TreeF1Scores)
-svcBarF1 = ax4.bar(ind, svcF1Scores, width, bottom=mlpF1Scores)
-
-ax4.set_title('F1')
-ax4.set_ylabel('F1 Score')
+ax4.set_title('Accuracy')
+ax4.set_ylabel('Accuracy Score')
 ax4.set_xticks(ind, ('1', '2', '3', '4', '5', '6', '7', '8', '9', '10'))
 ax4.set_xlabel('Executions')
-ax4.legend((treeBarF1[0], mlpBarF1[0], svcBarF1[0]), ('Decision Tree', 'Netural Network', 'Support Vector Machine'), prop={'size': 5})
+ax4.legend((treeBarAcc[0], mlpBarAcc[0], svcBarAcc[0]), ('Decision Tree', 'Netural Network', 'Support Vector Machine'), prop={'size': 5})
+
+#Precision----------------------------------------------------------------------
+treeBarPre = ax5.bar(ind, TreePrecsionScores, width)
+mlpBarPre = ax5.bar(ind, mlpPrecsionScores, width, bottom=TreePrecsionScores)
+svcBarPre = ax5.bar(ind, svcPrecsionScores, width, bottom=mlpPrecsionScores)
+
+ax5.set_title('Precision')
+ax5.set_ylabel('Precision Score')
+ax5.set_xticks(ind, ('1', '2', '3', '4', '5', '6', '7', '8', '9', '10'))
+ax5.set_xlabel('Executions')
+ax5.legend((treeBarPre[0], mlpBarPre[0], svcBarPre[0]), ('Decision Tree', 'Netural Network', 'Support Vector Machine'), prop={'size': 5})
+
+#Recall-------------------------------------------------------------------------
+treeBarRecall = ax6.bar(ind, TreeRecallScores, width)
+mlpBarRecall = ax6.bar(ind, mlpRecallScores, width, bottom=TreeRecallScores)
+svcBarRecall = ax6.bar(ind, svcRecallScores, width, bottom=mlpRecallScores)
+
+ax6.set_title('Recall')
+ax6.set_ylabel('Recall Score')
+ax6.set_xticks(ind, ('1', '2', '3', '4', '5', '6', '7', '8', '9', '10'))
+ax6.set_xlabel('Executions')
+ax6.legend((treeBarRecall[0], mlpBarRecall[0], svcBarRecall[0]), ('Decision Tree', 'Netural Network', 'Support Vector Machine'), prop={'size': 5})
+
+#F1-----------------------------------------------------------------------------
+treeBarF1 = ax7.bar(ind, TreeF1Scores, width)
+mlpBarF1 = ax7.bar(ind, mlpF1Scores, width, bottom=TreeF1Scores)
+svcBarF1 = ax7.bar(ind, svcF1Scores, width, bottom=mlpF1Scores)
+
+ax7.set_title('F1')
+ax7.set_ylabel('F1 Score')
+ax7.set_xticks(ind, ('1', '2', '3', '4', '5', '6', '7', '8', '9', '10'))
+ax7.set_xlabel('Executions')
+ax7.legend((treeBarF1[0], mlpBarF1[0], svcBarF1[0]), ('Decision Tree', 'Netural Network', 'Support Vector Machine'), prop={'size': 5})
 
 #fig.tight_layout()
 plt.show()
