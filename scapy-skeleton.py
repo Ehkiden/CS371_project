@@ -127,17 +127,19 @@ def main():
 
   #iterate through each label to get atleast 25 samples
   i=0
+  y=0
   while(i<label_len):
+      
     user_input = input("Ready for "+label_list[i]+"?")
     if(user_input):   #do not increment until user input
-      
       #while the len of the
       while(len(flowList)<24):
         print("gathering data")
         pkts = sniff(filter="not port ssh and not port domain", prn = lambda x: fields_extraction(x, flowList, i), count = 3000)
         
       #only append the data once we have 25+ flows of current activity
-      if(i==0):
+      if(y==0):
+        y=y+1
         flowChecker(flowList, "w")  #for creating and writing the csv
         flowAverage(flowList, "w")
       else:
@@ -147,20 +149,7 @@ def main():
       #empty out the list array for next flow type 
       flowList = []
       i=i+1
-
-  #once the data has been gathered, then find the avg of each feature per label
   
-  #load the data
-  flowData = pd.read_csv('test1.csv')
-
-  j=0
-  while(j<label_len):
-
-    fD2 = flowData.groupby(flowData.columns[5])[flowData.columns[14]==j].mean()
-
-    with open('flow_feat.csv', 'w') as f:
-      fD2.to_csv(f, header=False)
-      
   x=4  #debuggin purpose only
 
 
