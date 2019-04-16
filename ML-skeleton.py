@@ -1,3 +1,6 @@
+#Program:   ML-skeleton.py
+#Authors:   Daniel Weigle, David Mercado, Jared Rigdon
+#Purpose:   Perform various machine learning algorithms and runs them against the collected flows from the scapy-skeleton.py to calculate the prediction accuracy and other performance metrics for each ML algorithm
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt

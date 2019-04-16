@@ -1,3 +1,6 @@
+#Program:   Scapy_skeleton.py
+#Authors:   Daniel Weigle, David Mercado, Jared Rigdon
+#Purpose:   Collects a series of flows for various types of online activities and stores them into a .csv
 from scapy.all import sniff
 import pandas as pd
 import numpy as np
@@ -79,6 +82,8 @@ def flowChecker(flowSent, action):
   F.write(temp)
   F.close()
 
+
+#used to find the average of the of the features
 def flowAverage(tempList, action):
   flow5Tot  = 0
   flow6Tot  = 0
@@ -119,6 +124,7 @@ def filtered_flowCheck(flowList, curr_flowLabel):
   num = (df['label']==curr_flowLabel).sum()
   return num
 
+#after all of the flows are captured, this function will find the avg of each feature by the lable
 def getAvg():
   df = pd.read_csv('flowData.csv')
   columns_list = ['srcIP', 'dstIP', 'srcPort', 'destPort', 'proto', 'totalPkts', 'srcPkts', 'destPkts', 'totalBytes', 'srcBytes', 'destBytes', 'currTime', 'durrTime', 'label']
@@ -156,7 +162,6 @@ def main():
   i=1
   y=0
   p=0
-  #stop = 0
   keep_coll=0
   while(i<label_len):
     #change what user_input is based on whether we are still collecting or not
@@ -185,114 +190,14 @@ def main():
       #check if the filtered csv is currently at >= 25 then empty else keep going
       if(filtered_flowCheck(flowList, i)>24):
         if(p==0):
-#          flowChecker(flowList, "w")  #for creating and writing the csv
           flowAverage(flowList, "w")
           p=p+1
         else:
-#          sflowChecker(flowList, "a")  #for appending and not overwriting instead
           flowAverage(flowList, "a")
         i=i+1
         keep_coll=0
         flowList = []
-        #stop = 1
         
-      #else:
-        #stop = 0
-  x=4  #debuggin purpose only
   getAvg()
 
 main()
-
-'''
-    if(j==0):
-      #temp = flowData[flowData[14] == j]    #retrieve rows with associated label value
-      fD2 = flowData.groupby(flowData.columns[5])[flowData.columns[14]==j].mean()
-
-
-      #write/overwrite to csv
-      with open('flow_feat.csv', 'w') as f:
-        fD2.to_csv(f, header=False)
-    else:
-
-
-      #append to csv
-      with open('flow_feat.csv', 'a') as f:
-        fD2.to_csv(f, header=False)
-
-'''
-
-
-'''
-Soooooooooo
-What they want is a set of packets to represent a flow
-meaning that each flow will contain packets where the src_ip, dest_ip, protocol, src_port, dest_port are crossed
-ref with each other or the same
-
-This would look like:
-duration(not needed), src_ip, dest_ip, protocol, src_port, dest_port, bytes_in, bytes_out, seq, ack, src_transfer_rate, dest_transfer_rate, 
-
-src_ip    - This will be our ip (for simplicity sake...)
-src_port  - The src ip's port
-dest_ip   - The dest ip that is seen with the src ip
-dest_port - The dest port
-protocol  - TCP or UDP
-bytes_in  - The total bytes the src_ip recieves from the dest_ip (aka the len )
-bytes_out - The total bytes the src_ip sent to the dest_ip (aka the len )
-**************** maybe skip these and just go by ip and port
-seq       - The sequence number which identifies if the session is current along with the ack number  
-ack       - The ack # used with the seq # to identify is the session is current
-****************
-src_transfer_rate   - Just the percentage of bytes_in/(bytes_in + bytes_out)
-dest_transfer_rate  - Just the percentage of bytes_out/(bytes_in + bytes_out)
-
-This should be good enough for what we need ^
-----------------------------------------------
-The labels will be applied after we have both packet flows into the tuple(which goes into the .csv)
-
-As for label defs:
-
-* Web Browsing should always use 80/tcp and/or 443/tcp and be a relatively small byte count
-* Video Streaming will use tcp as well as udp depending on the type of stream. Youtube uses tcp for thier prerendered videos 
-  while Live streaming sites will use UDP as they are no prerendered 
-* Video Conference will use UDP
-* File download via browser will use the same method as web browsing and stuff like scp will use 21/tcp and 22/tcp
-
-'''
-
-'''
-example packet from twicth streams
-
-52.223.224.71,192.168.1.155,https,11203,
-Ether / IP / TCP 52.223.224.71:https > 192.168.1.155:11203 A / Raw
-###[ Ethernet ]###
-  dst       = 08:62:66:2c:4a:a1
-  src       = c0:56:27:6d:97:87
-  type      = 0x800
-###[ IP ]###
-     version   = 4
-     ihl       = 5
-     tos       = 0x0
-     len       = 1500
-     id        = 11905
-     flags     = DF
-     frag      = 0
-     ttl       = 53
-     proto     = tcp
-     chksum    = 0x3a31
-     src       = 52.223.224.71
-     dst       = 192.168.1.155
-     \options   
-###[ TCP ]###
-        sport     = https
-        dport     = 11203
-        seq       = 307931811
-        ack       = 4185644134
-        dataofs   = 5
-        reserved  = 0
-        flags     = A
-        window    = 363
-        chksum    = 0x4b10
-        urgptr    = 0
-        options   = []
-'''
-
